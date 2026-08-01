@@ -1,0 +1,60 @@
+namespace NexusQuant.Protocol;
+
+struct Point {
+  x: double;
+  y: double;
+}
+
+struct Color {
+  r: ubyte;
+  g: ubyte;
+  b: ubyte;
+  a: ubyte;
+}
+
+table DrawingLine {
+  start: Point;
+  end: Point;
+  color: Color;
+  width: float;
+}
+
+table DrawingRect {
+  x1: double;
+  y1: double;
+  x2: double;
+  y2: double;
+  color: Color;
+  fill: bool;
+}
+
+table DrawingPolygon {
+  points: [Point];
+  color: Color;
+  fill: bool;
+}
+
+table DrawingText {
+  x: double;
+  y: double;
+  text: string;
+  color: Color;
+  size: float;
+}
+
+table IndicatorValue {
+  name: string;
+  timestamps: [long];
+  values: [double];
+}
+
+table IndicatorPayload {
+  indicator_id: string;
+  values: [IndicatorValue];
+  lines: [DrawingLine];
+  rectangles: [DrawingRect];
+  polygons: [DrawingPolygon];
+  texts: [DrawingText];
+}
+
+root_type IndicatorPayload;

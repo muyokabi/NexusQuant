@@ -1,0 +1,9 @@
+[package]
+name = "protocol-schema"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+flatbuffers = "2.0.0"
+
+[build-dependencies]

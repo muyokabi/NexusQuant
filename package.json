@@ -1,0 +1,14 @@
+{
+  "name": "nexusquant-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NexusQuant - Ultra-High-Performance Quantitative Analysis and Charting Platform",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "pnpm --filter \"*\" build",
+    "test": "pnpm --filter \"*\" test"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

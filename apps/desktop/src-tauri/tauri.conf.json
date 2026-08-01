@@ -1,0 +1,21 @@
+{
+  "productName": "NexusQuant",
+  "version": "1.0.0",
+  "identifier": "io.nexusquant.desktop",
+  "bundle": {
+    "active": true,
+    "targets": "all"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "NexusQuant Charting Workbench",
+        "width": 1280,
+        "height": 800
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}

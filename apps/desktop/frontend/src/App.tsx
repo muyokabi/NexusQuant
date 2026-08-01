@@ -1,17 +1,76 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DrawingFactory, DrawingTool, Point } from "./components/chart/tools/drawing_manager";
+import { DockLayout } from "./components/workspace/DockLayout";
+import { CommandPalette } from "./components/workspace/Toolbar";
+import { SettingsModal } from "./components/alerts/AlertModal";
+import { loadSavedWorkspace, saveWorkspace, WorkspaceLayout } from "./state/chartStore";
+import { loadSystemConfig, saveSystemConfig, SystemConfig } from "./state/configStore";
+import { generateSyntheticBars, MarketBar } from "./utils/math";
+import { drawChart21Types, ChartTheme } from "./components/chart/renderers/CandlestickRenderer";
 
 export default function App() {
-  const [selectedTool, setSelectedTool] = useState<string>("trendline");
-  const [activeTimeframe, setActiveTimeframe] = useState<string>("1D");
-  const [selectedAsset, setSelectedAsset] = useState<string>("BTC/USDT");
+  // Command Palette & Global Keys state
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+
+  // Settings Modal state
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Workspace & Persistence State
+  const [workspace, setWorkspace] = useState<WorkspaceLayout>(() => loadSavedWorkspace());
+  const [config, setConfig] = useState<SystemConfig>(() => loadSystemConfig());
+
+  // Current selected workspace panel ID (to sync selection panels)
+  const [selectedPanelId, setSelectedPanelId] = useState<string>("p1");
+
+  // Chart rendering properties (synced for current active panel)
+  const activePanel = workspace.panels.find(p => p.id === selectedPanelId) || workspace.panels[0];
+
   const [drawings, setDrawings] = useState<DrawingTool[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedTool, setSelectedTool] = useState<string>("Trendline");
+  const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
+  const [draggedDrawing, setDraggedDrawing] = useState<{ id: string; nodeIndex: number } | null>(null);
+
+  // Indicators list & query
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedIndicator, setSelectedIndicator] = useState<string>("");
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
-  const [draggedDrawing, setDraggedDragged] = useState<{ id: string; nodeIndex: number } | null>(null);
+  // Canvas Reference with state trigger to ensure instant rendering updates
+  const [canvasNode, setCanvasNode] = useState<HTMLCanvasElement | null>(null);
+  const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
+    if (node !== null) {
+      setCanvasNode(node);
+    }
+  }, []);
+
+  // Execution stop loss / take profit lines
+  const orderLines = [
+    { id: "sl", price: 63800, type: "Stop Loss" as const },
+    { id: "tp", price: 64900, type: "Take Profit" as const }
+  ];
+
+  // Notification status
+  const [toasts, setToasts] = useState<Array<{ id: string; msg: string; type: "info" | "success" | "warn" }>>([
+    { id: "init", msg: "NexusQuant Pro v1.0.0 Online", type: "success" }
+  ]);
+
+  // Synthetic Bars buffer
+  const [bars, setBars] = useState<MarketBar[]>([]);
+
+  // Selected theme colors matrix
+  const [themeColors, setThemeColors] = useState<ChartTheme>({
+    bullBody: "#4CAF50",
+    bullBorder: "#4CAF50",
+    bullWick: "#4CAF50",
+    bearBody: "#F44336",
+    bearBorder: "#F44336",
+    bearWick: "#F44336",
+    gridColor: "#2a2a35",
+    gridOpacity: 0.35,
+    textColor: "#8a8f9d",
+    watermarkOpacity: 0.15,
+    crosshairColor: "#2196F3",
+    crosshairStyle: "dashed"
+  });
 
   // Core market assets
   const assets = {
@@ -21,7 +80,6 @@ export default function App() {
     Stocks: ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN"]
   };
 
-  // Timeframes list
   const timeframes = [
     "1 Tick", "10 Ticks", "100 Ticks",
     "1s", "5s", "10s", "15s", "30s",
@@ -30,8 +88,8 @@ export default function App() {
     "10 Range", "100 Volume"
   ];
 
-  // 405 indicator titles for selection modal/search
-  const indicators_list = [
+  // Deduplicated unique indicators
+  const indicators_list = Array.from(new Set([
     "Simple Moving Average (SMA)", "Exponential Moving Average (EMA)", "Weighted Moving Average (WMA)",
     "Double Exponential Moving Average (DEMA)", "Triple Exponential Moving Average (TEMA)",
     "Hull Moving Average (HMA)", "Volume Weighted Moving Average (VWMA)", "Volume Weighted Average Price (VWAP)",
@@ -123,7 +181,7 @@ export default function App() {
     "ZigZag High/Low Labels", "Gartley Pattern Detector", "Butterfly Pattern Detector", "Bat Pattern Detector",
     "Crab Pattern Detector", "Shark Pattern Detector", "Cypher Pattern Detector", "AB=CD Pattern Detector",
     "Three Drives Pattern", "Head and Shoulders / Inverse Head & Shoulders", "Double Top / Double Bottom Detector",
-    "Triple Top / Triple Bottom", "Rising Wedge / Falling Wedge Detector", "Bull Flag / Bear Flag Detector",
+    "Triple Top / Bottom", "Rising Wedge / Falling Wedge Detector", "Bull Flag / Bear Flag Detector",
     "Pennant Pattern Detector", "Ascending / Descending Triangle Detector", "Symmetrical Triangle Detector",
     "Cup and Handle / Inverse Cup & Handle", "Rectangle Consolidation Pattern", "Candlestick Pattern - Doji",
     "Candlestick Pattern - Dragonfly Doji / Gravestone Doji", "Candlestick Pattern - Engulfing (Bullish/Bearish)",
@@ -151,106 +209,127 @@ export default function App() {
     "Copula Dependence Indicator", "Value at Risk (VaR) Rolling Exposure", "Expected Shortfall (CVaR) Line",
     "Tail Risk Indicator", "Systemic Risk Beta", "Market Microstructure Noise Estimator", "Tick Rule Buy/Sell Classifier",
     "Lee-Ready Trade Classifier"
-  ];
+  ]));
 
-  // 50 drawing tools categorized list
   const drawing_tools = [
-    // Lines & Rays
     "Trendline", "Ray", "Info Line", "Extended Line", "Trend Angle", "Horizontal Line", "Horizontal Ray", "Vertical Line", "Cross Line", "Parallel Channel", "Disjoint Channel", "Flat Top/Bottom Channel",
-    // Fibonacci & Gann
     "Fibonacci Retracement", "Trend-Based Fibonacci Extension", "Fibonacci Channel", "Fibonacci Time Zones", "Fibonacci Speed Resistance Fan", "Fibonacci Circles", "Fibonacci Spiral", "Fibonacci Wedge", "Gann Box", "Gann Fan", "Gann Square Fixed", "Pitchfan",
-    // Geometric Shapes
     "Rectangle", "Rotated Rectangle", "Circle / Ellipse", "Triangle", "Polyline / Polygon", "Path Tool", "Curve", "Arc", "Text Box / Callout Box", "Anchored Note",
-    // Pitchforks
     "Andrews' Pitchfork", "Schiff Pitchfork", "Modified Schiff Pitchfork", "Inside Pitchfork", "XABCD Pattern", "ABCD Pattern", "Cypher Pattern Tool", "Head and Shoulders Pattern Tool",
-    // Projections
     "Long Position", "Short Position", "Forecast", "Date and Price Range", "Price Range", "Date Range", "Bars Pattern Tool", "Fixed Range Volume Profile Box"
   ];
 
-  // Render the canvas
+  // Sync state modifications & local persistence updates
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    saveWorkspace(workspace);
+  }, [workspace]);
+
+  useEffect(() => {
+    saveSystemConfig(config);
+  }, [config]);
+
+  // Handle auto-updates indicator
+  const handleHotUpdate = () => {
+    setConfig({ ...config, updateStatus: "applied" });
+    const toastId = `upd-${Date.now()}`;
+    setToasts([...toasts, { id: toastId, msg: "Silent hot-update successfully finalized. Session retained.", type: "success" }]);
+  };
+
+  // Keyboard navigation & Quick hotkeys
+  useEffect(() => {
+    const handleGlobalKeys = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+      } else if (e.key === "Escape") {
+        setCommandPaletteOpen(false);
+        setSettingsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeys);
+    return () => window.removeEventListener("keydown", handleGlobalKeys);
+  }, []);
+
+  // Hotkey navigation helper mapping command palette results
+  const handleSelectAction = (type: "asset" | "timeframe" | "indicator" | "setting", value: string) => {
+    if (type === "asset") {
+      updateActivePanel({ symbol: value, title: `${value} Focus` });
+    } else if (type === "timeframe") {
+      updateActivePanel({ timeframe: value });
+    } else if (type === "indicator") {
+      setSelectedIndicator(value);
+    } else if (type === "setting") {
+      if (value.startsWith("theme-")) {
+        const selectedTheme = value.replace("theme-", "") as any;
+        setConfig(prev => ({ ...prev, theme: selectedTheme }));
+      } else if (value.startsWith("fps-")) {
+        const val = value.replace("fps-", "");
+        const fpsVal = val === "unlimited" ? "unlimited" : parseInt(val);
+        setConfig(prev => ({ ...prev, fpsCap: fpsVal as any }));
+      } else if (value === "export-json") {
+        handleExportJson();
+      } else if (value === "import-json") {
+        handleImportJson();
+      }
+    }
+  };
+
+  // Update a single field inside active panel
+  const updateActivePanel = (updates: Partial<WorkspaceLayout["panels"][0]>) => {
+    const updatedPanels = workspace.panels.map((p) => {
+      if (p.id === selectedPanelId) {
+        return { ...p, ...updates };
+      }
+      return p;
+    });
+    setWorkspace({ ...workspace, panels: updatedPanels });
+  };
+
+  // Populate dynamic synthetic bars
+  useEffect(() => {
+    const synthetic = generateSyntheticBars(activePanel.symbol, activePanel.timeframe, 120);
+    setBars(synthetic);
+  }, [activePanel.symbol, activePanel.timeframe]);
+
+  // Re-render chart onto main viewport canvas (proper dependencies tracking)
+  useEffect(() => {
+    if (!canvasNode || bars.length === 0) return;
+    const ctx = canvasNode.getContext("2d");
     if (!ctx) return;
 
-    // Clear background
-    ctx.fillStyle = "#1e1e1e";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Direct draw
+    drawChart21Types(
+      ctx,
+      activePanel.chartType,
+      bars,
+      themeColors,
+      canvasNode.width,
+      canvasNode.height,
+      activePanel.zoomLevel || 100,
+      orderLines,
+      142.50
+    );
 
-    // Render grid lines
-    ctx.strokeStyle = "#2d2d2d";
-    ctx.lineWidth = 1;
-    for (let x = 0; x < canvas.width; x += 40) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-    }
-    for (let y = 0; y < canvas.height; y += 40) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
-
-    // Draw Mock Candlestick Chart (TradingView style)
-    const mockCloses = [300, 310, 280, 295, 340, 360, 320, 350, 380, 410, 390, 420];
-    mockCloses.forEach((close, index) => {
-      const x = 50 + index * 60;
-      const open = mockCloses[index - 1] || 310;
-      const high = Math.max(open, close) + 20;
-      const low = Math.min(open, close) - 15;
-      const green = close >= open;
-
-      ctx.strokeStyle = green ? "#4CAF50" : "#F44336";
-      ctx.fillStyle = green ? "#4CAF50" : "#F44336";
-      ctx.lineWidth = 2;
-
-      // Wick
-      ctx.beginPath();
-      ctx.moveTo(x + 15, high);
-      ctx.lineTo(x + 15, low);
-      ctx.stroke();
-
-      // Body
-      ctx.beginPath();
-      ctx.rect(x, Math.min(open, close), 30, Math.abs(close - open) || 4);
-      ctx.fill();
-    });
-
-    // Render selected indicator line
-    if (selectedIndicator) {
-      ctx.strokeStyle = "#E040FB";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      mockCloses.forEach((val, idx) => {
-        const x = 50 + idx * 60 + 15;
-        const y = val - 40; // Simulate shifted moving average overlay
-        if (idx === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "12px sans-serif";
-      ctx.fillText(`Indicator: ${selectedIndicator} Active`, 20, 30);
-    }
-
-    // Render active drawing tools
+    // Draw active drawing overlays
     drawings.forEach((drawing) => {
       drawing.render(ctx);
     });
 
-    // Render preview points of current drawing
+    // Drawing preview line
     if (currentPoints.length > 0) {
       ctx.strokeStyle = "rgba(33, 150, 243, 0.5)";
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
       currentPoints.forEach(p => ctx.lineTo(p.x, p.y));
       ctx.stroke();
     }
-  }, [drawings, currentPoints, selectedIndicator]);
+  }, [canvasNode, bars, activePanel.chartType, activePanel.zoomLevel, themeColors, drawings, currentPoints, orderLines]);
 
+  // Canvas Handlers
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
+    if (!canvasNode) return;
+    const rect = canvasNode.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const clickPoint = { x, y };
@@ -259,14 +338,14 @@ export default function App() {
     for (let d of drawings) {
       for (let i = 0; i < d.points.length; i++) {
         if (Math.abs(d.points[i].x - x) < 8 && Math.abs(d.points[i].y - y) < 8) {
-          setDraggedDragged({ id: d.id, nodeIndex: i });
+          setDraggedDrawing({ id: d.id, nodeIndex: i });
           return;
         }
       }
     }
 
     // 2. Select / Deselect drawing on hit-testing
-    const ctx = canvas.getContext("2d");
+    const ctx = canvasNode.getContext("2d");
     if (ctx) {
       let hit = false;
       const updated = drawings.map((d) => {
@@ -282,9 +361,7 @@ export default function App() {
 
     // 3. Otherwise, initiate new drawing points placement
     const nextPoints = [...currentPoints, clickPoint];
-
-    // Check if tool is complete (mostly 2 points is sufficient for lines/rectangles/circles)
-    const requiredPoints = ["triangle", "polyline / polygon", "andrews' pitchfork", "schiff pitchfork", "modified schiff pitchfork", "inside pitchfork", "xabcd pattern", "cypher pattern tool", "head and shoulders pattern tool"].includes(selectedTool.toLowerCase()) ? 3 : 2;
+    const requiredPoints = ["triangle", "polyline / polygon", "andrews' pitchfork", "schiff pitchfork", "modified schiff pitchfork", "inside pitchfork", "xabcd pattern", "abcd pattern", "cypher pattern tool", "head and shoulders pattern tool"].includes(selectedTool.toLowerCase()) ? 3 : 2;
 
     if (nextPoints.length >= requiredPoints) {
       const newId = `${selectedTool}-${Date.now()}`;
@@ -298,15 +375,16 @@ export default function App() {
 
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (draggedDrawing) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
+      if (!canvasNode) return;
+      const rect = canvasNode.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
       const updated = drawings.map((d) => {
         if (d.id === draggedDrawing.id) {
-          d.dragNode(draggedDrawing.nodeIndex, { x, y });
+          const cloned = d.clone();
+          cloned.dragNode(draggedDrawing.nodeIndex, { x, y });
+          return cloned;
         }
         return d;
       });
@@ -315,7 +393,7 @@ export default function App() {
   };
 
   const handleCanvasMouseUp = () => {
-    setDraggedDragged(null);
+    setDraggedDrawing(null);
   };
 
   const clearAllDrawings = () => {
@@ -327,149 +405,444 @@ export default function App() {
     setDrawings(drawings.filter(d => !d.selected));
   };
 
+  // Export templates raw JSON
+  const handleExportJson = () => {
+    const raw = JSON.stringify({ workspace, config }, null, 2);
+    const blob = new Blob([raw], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `nexusquant-layout-${Date.now()}.json`;
+    a.click();
+    setToasts([...toasts, { id: `exp-${Date.now()}`, msg: "Workspace JSON template successfully exported.", type: "success" }]);
+  };
+
+  // Import templates raw JSON
+  const handleImportJson = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt: any) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.workspace) setWorkspace(parsed.workspace);
+          if (parsed.config) setConfig(parsed.config);
+          setToasts([...toasts, { id: `imp-${Date.now()}`, msg: "Workspace configuration successfully imported.", type: "success" }]);
+        } catch (err) {
+          setToasts([...toasts, { id: `imp-err-${Date.now()}`, msg: "Invalid JSON configuration structure.", type: "warn" }]);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  // 4K Ultra Screenshot Generator
+  const handleExport4KSnapshot = () => {
+    if (!canvasNode) return;
+
+    // Create offscreen high resolution 4K canvas
+    const offscreen = document.createElement("canvas");
+    offscreen.width = 3840;
+    offscreen.height = 2160;
+    const offCtx = offscreen.getContext("2d");
+    if (!offCtx) return;
+
+    // Draw high definition output
+    drawChart21Types(
+      offCtx,
+      activePanel.chartType,
+      bars,
+      themeColors,
+      3840,
+      2160,
+      activePanel.zoomLevel || 100,
+      orderLines,
+      142.50
+    );
+
+    // Save and download PNG
+    const url = offscreen.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `nexusquant-pro-4k-${Date.now()}.png`;
+    a.click();
+    setToasts([...toasts, { id: `snap-${Date.now()}`, msg: "4K ultra snapshot exported to downloads folder.", type: "success" }]);
+  };
+
   const filteredIndicators = indicators_list.filter((name) =>
     name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#121212", color: "#ffffff" }}>
-      {/* Top Header bar */}
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid #2d2d2d", background: "#1a1a1a" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <span style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#2196F3" }}>NexusQuant Pro</span>
+  // Render content of workspace sub-panes
+  const renderPanelContent = (panel: WorkspaceLayout["panels"][0]) => {
+    const isMainChart = panel.id === selectedPanelId;
 
-          {/* Asset Class dropdown */}
-          <select
-            value={selectedAsset}
-            onChange={(e) => setSelectedAsset(e.target.value)}
-            style={{ background: "#2a2a2a", color: "#ffffff", border: "1px solid #444", borderRadius: "4px", padding: "4px 8px" }}
-          >
-            {Object.entries(assets).map(([cat, list]) => (
-              <optgroup label={cat} key={cat}>
-                {list.map(sym => <option value={sym} key={sym}>{sym}</option>)}
-              </optgroup>
-            ))}
-          </select>
+    if (panel.type === "watchlist") {
+      return (
+        <div style={{ padding: "16px", background: "#121218", height: "100%", overflowY: "auto" }}>
+          <h4 style={{ margin: "0 0 12px 0", color: "#d1d4dc", fontSize: "12px", borderBottom: "1px solid #23232e", paddingBottom: "6px" }}>Institutional Tracker</h4>
+          {Object.entries(assets).map(([cat, list]) => (
+            <div key={cat} style={{ marginBottom: "12px" }}>
+              <span style={{ fontSize: "10px", color: "#8a8f9d", fontWeight: "bold", textTransform: "uppercase" }}>{cat}</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "4px" }}>
+                {list.map(sym => (
+                  <button
+                    key={sym}
+                    onClick={() => updateActivePanel({ symbol: sym })}
+                    style={{
+                      background: activePanel.symbol === sym ? "#2196F3" : "#1c1c24",
+                      color: "#fff",
+                      border: "1px solid #23232e",
+                      borderRadius: "4px",
+                      padding: "4px 8px",
+                      fontSize: "11px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {sym}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
 
-          {/* Timeframes bar */}
-          <div style={{ display: "flex", gap: "5px" }}>
-            {timeframes.slice(0, 10).map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setActiveTimeframe(tf)}
-                style={{
-                  background: activeTimeframe === tf ? "#2196F3" : "#2a2a2a",
-                  color: "#ffffff",
-                  border: "none",
-                  borderRadius: "4px",
-                  padding: "4px 10px",
-                  cursor: "pointer",
-                  fontSize: "12px"
-                }}
+    if (panel.type === "news") {
+      return (
+        <div style={{ padding: "16px", background: "#121218", height: "100%", overflowY: "auto", fontFamily: "monospace", fontSize: "11px", color: "#aaa" }}>
+          <div style={{ color: "#FF9800", fontWeight: "bold", marginBottom: "10px" }}>⚡ REALTIME MARKET SQUAWK FEED</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <p>• [10:14:02 UTC] FED BOSTIC SAYS INFLATION CONTINUES STEADY DECREASE</p>
+            <p>• [10:11:45 UTC] LARGE BTC OPTION MATURITY DETECTED AT $65,000 BLOCK</p>
+            <p>• [10:07:11 UTC] ECB LAGARDE HINTS AT MACRO RATES STABILITY FORECAST</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (panel.type === "orderbook" || panel.type === "scanner") {
+      return (
+        <div style={{ padding: "16px", background: "#121218", height: "100%", overflowY: "auto", fontFamily: "monospace", fontSize: "11px", color: "#aaa" }}>
+          <div style={{ color: "#4CAF50", fontWeight: "bold", marginBottom: "10px" }}>📋 LEVEL-3 DEPTH ENGINE</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+            <div>
+              <div style={{ color: "#F44336", fontWeight: "bold" }}>ASKS (SELLS)</div>
+              <p>$64,980.50 - 42.15 BTC</p>
+              <p>$64,950.00 - 15.80 BTC</p>
+              <p>$64,910.00 - 122.3 BTC</p>
+            </div>
+            <div>
+              <div style={{ color: "#4CAF50", fontWeight: "bold" }}>BIDS (BUYS)</div>
+              <p>$63,850.50 - 18.25 BTC</p>
+              <p>$63,800.00 - 95.10 BTC</p>
+              <p>$63,720.00 - 201.4 BTC</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default main charting workspace
+    return (
+      <div
+        style={{ display: "flex", height: "100%", overflow: "hidden" }}
+        onClick={() => setSelectedPanelId(panel.id)}
+      >
+        {/* Main Chart Column */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#121218", position: "relative" }}>
+          {/* Controls toolbar bar */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "6px 12px",
+            background: "#16161c",
+            borderBottom: "1px solid #23232e"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {/* Asset Selection */}
+              <select
+                value={panel.symbol}
+                onChange={(e) => updateActivePanel({ symbol: e.target.value })}
+                style={{ background: "#1c1c24", color: "#fff", border: "1px solid #2a2a3a", borderRadius: "4px", padding: "4px 8px", fontSize: "12px" }}
               >
-                {tf}
+                {Object.entries(assets).map(([cat, list]) => (
+                  <optgroup label={cat} key={cat}>
+                    {list.map(sym => <option value={sym} key={sym}>{sym}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+
+              {/* Chart Visualizer Type dropdown */}
+              <select
+                value={panel.chartType}
+                onChange={(e) => updateActivePanel({ chartType: e.target.value })}
+                style={{ background: "#1c1c24", color: "#fff", border: "1px solid #2a2a3a", borderRadius: "4px", padding: "4px 8px", fontSize: "12px" }}
+              >
+                {[
+                  "Standard Candlesticks", "Hollow Candlesticks", "Volume Candlesticks", "Heikin-Ashi", "Renko", "Kagi", "Point & Figure", "Line Break",
+                  "Classic Line", "Line with Markers", "Step Line", "Standard Area", "HLC Area", "Baseline", "Bar Chart", "High-Low Bars",
+                  "Range Bars", "Columns Chart", "Volume Footprint", "Time Price Opportunity", "Session Volume Profile"
+                ].map(ct => <option key={ct} value={ct}>{ct}</option>)}
+              </select>
+
+              {/* Dynamic Zoom level control */}
+              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <button
+                  onClick={() => updateActivePanel({ zoomLevel: Math.max(30, (panel.zoomLevel || 100) - 10) })}
+                  style={{ background: "#1c1c24", border: "1px solid #23232e", borderRadius: "4px", color: "#fff", padding: "2px 8px", cursor: "pointer" }}
+                >
+                  -
+                </button>
+                <span style={{ fontSize: "11px", color: "#8a8f9d" }}>Zoom: {panel.zoomLevel || 100}%</span>
+                <button
+                  onClick={() => updateActivePanel({ zoomLevel: Math.min(200, (panel.zoomLevel || 100) + 10) })}
+                  style={{ background: "#1c1c24", border: "1px solid #23232e", borderRadius: "4px", color: "#fff", padding: "2px 8px", cursor: "pointer" }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                onClick={clearAllDrawings}
+                style={{ background: "#f44336", border: "none", borderRadius: "4px", color: "#fff", padding: "4px 10px", fontSize: "11px", cursor: "pointer" }}
+              >
+                Clear Vector Overlays
               </button>
-            ))}
+              <button
+                onClick={deleteSelected}
+                style={{ background: "#ff9800", border: "none", borderRadius: "4px", color: "#fff", padding: "4px 10px", fontSize: "11px", cursor: "pointer" }}
+              >
+                Delete Selected
+              </button>
+            </div>
+          </div>
+
+          {/* Actual Canvas */}
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+            <canvas
+              ref={isMainChart ? canvasRef : null}
+              width={750}
+              height={450}
+              onMouseDown={isMainChart ? handleCanvasMouseDown : undefined}
+              onMouseMove={isMainChart ? handleCanvasMouseMove : undefined}
+              onMouseUp={isMainChart ? handleCanvasMouseUp : undefined}
+              style={{
+                border: "1px solid #23232e",
+                borderRadius: "6px",
+                cursor: "crosshair",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.4)"
+              }}
+            />
           </div>
         </div>
 
-        <div>
+        {/* Sidebar Controls (Renders if Main viewport selection is active) */}
+        {isMainChart && (
+          <div style={{ width: "240px", borderLeft: "1px solid #23232e", background: "#16161c", display: "flex", flexDirection: "column" }}>
+            {/* Dynamic Interactive Drawing vectors lists */}
+            <div style={{ padding: "10px", borderBottom: "1px solid #23232e" }}>
+              <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2196F3" }}>Vector suite ({drawing_tools.length})</span>
+              <div style={{ maxHeight: "150px", overflowY: "auto", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                {drawing_tools.map((dt) => (
+                  <button
+                    key={dt}
+                    onClick={() => setSelectedTool(dt)}
+                    style={{
+                      textAlign: "left",
+                      background: selectedTool === dt ? "rgba(33, 150, 243, 0.15)" : "transparent",
+                      color: selectedTool === dt ? "#2196F3" : "#d1d4dc",
+                      border: "none",
+                      borderRadius: "3px",
+                      padding: "4px 8px",
+                      cursor: "pointer",
+                      fontSize: "11px"
+                    }}
+                  >
+                    {dt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Indicator Select and Search Panel */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ padding: "10px", borderBottom: "1px solid #23232e" }}>
+                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Modular Indicator Overlay</span>
+                <input
+                  type="text"
+                  placeholder="Search 405 indicators..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    width: "90%",
+                    marginTop: "6px",
+                    background: "#0c0c10",
+                    border: "1px solid #2a2a3a",
+                    borderRadius: "4px",
+                    padding: "4px 8px",
+                    color: "#fff",
+                    fontSize: "11px"
+                  }}
+                />
+              </div>
+
+              <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
+                {filteredIndicators.map((ind) => (
+                  <div
+                    key={ind}
+                    onClick={() => setSelectedIndicator(ind)}
+                    style={{
+                      padding: "6px 8px",
+                      cursor: "pointer",
+                      borderRadius: "3px",
+                      background: selectedIndicator === ind ? "rgba(224, 64, 251, 0.15)" : "transparent",
+                      color: selectedIndicator === ind ? "#E040FB" : "#8a8f9d",
+                      fontSize: "11px"
+                    }}
+                  >
+                    {ind}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
+      background: "#0c0c10",
+      color: "#ffffff",
+      fontFamily: "Inter, sans-serif"
+    }}>
+      {/* Top Application header strip */}
+      <header style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "8px 20px",
+        background: "#121218",
+        borderBottom: "1px solid #23232e"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <span style={{ fontSize: "14px", fontWeight: "bold", color: "#2196F3", letterSpacing: "1.5px" }}>
+            NEXUSQUANT PRO
+          </span>
+
+          <span style={{ fontSize: "11px", color: "#8a8f9d" }}>
+            CMD PALETTE: <kbd style={{ background: "#1c1c24", padding: "2px 4px", borderRadius: "3px" }}>Cmd+K</kbd> or <kbd style={{ background: "#1c1c24", padding: "2px 4px", borderRadius: "3px" }}>Ctrl+K</kbd>
+          </span>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Integrated Update toast block */}
+          {config.updateStatus === "ready" && (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(76, 175, 80, 0.15)", padding: "4px 10px", borderRadius: "4px", border: "1px solid #4CAF50" }}>
+              <span style={{ fontSize: "11px", color: "#4CAF50" }}>Silent Auto-Update ready.</span>
+              <button
+                onClick={handleHotUpdate}
+                style={{ background: "#4CAF50", color: "#fff", border: "none", borderRadius: "3px", padding: "2px 6px", fontSize: "10px", cursor: "pointer", fontWeight: "bold" }}
+              >
+                Hot Reload
+              </button>
+            </div>
+          )}
+
           <button
-            onClick={clearAllDrawings}
-            style={{ marginRight: "10px", background: "#f44336", border: "none", borderRadius: "4px", color: "#fff", padding: "6px 12px", cursor: "pointer" }}
+            onClick={() => setSettingsOpen(true)}
+            style={{
+              background: "#1c1c24",
+              border: "1px solid #2a2a3a",
+              borderRadius: "4px",
+              color: "#d1d4dc",
+              padding: "5px 12px",
+              cursor: "pointer",
+              fontSize: "12px",
+              fontWeight: 600
+            }}
           >
-            Clear Canvas
-          </button>
-          <button
-            onClick={deleteSelected}
-            style={{ background: "#ff9800", border: "none", borderRadius: "4px", color: "#fff", padding: "6px 12px", cursor: "pointer" }}
-          >
-            Delete Selected
+            ⚙ Terminal Parameters
           </button>
         </div>
       </header>
 
-      {/* Main Workspace section */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* Left Toolbar - 50 Canvas Drawing Tools selector */}
-        <aside style={{ width: "240px", borderRight: "1px solid #2d2d2d", background: "#1a1a1a", display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "10px", fontSize: "14px", fontWeight: "bold", borderBottom: "1px solid #2d2d2d" }}>
-            Drawing Tools ({drawing_tools.length})
-          </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
-            {drawing_tools.map((tool) => (
-              <button
-                key={tool}
-                onClick={() => setSelectedTool(tool)}
-                style={{
-                  textAlign: "left",
-                  background: selectedTool === tool ? "rgba(33, 150, 243, 0.2)" : "transparent",
-                  color: selectedTool === tool ? "#2196F3" : "#ccc",
-                  border: selectedTool === tool ? "1px solid #2196F3" : "none",
-                  borderRadius: "4px",
-                  padding: "8px 12px",
-                  cursor: "pointer",
-                  fontSize: "13px"
-                }}
-              >
-                {tool}
-              </button>
-            ))}
-          </div>
-        </aside>
+      {/* Main Docking Layout skeleton workspace */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        <DockLayout
+          layout={workspace}
+          onLayoutChange={setWorkspace}
+          renderPanelContent={renderPanelContent}
+        />
+      </div>
 
-        {/* Center Main Charting Panel */}
-        <main style={{ flex: 1, position: "relative", background: "#121212", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <canvas
-            ref={canvasRef}
-            width={850}
-            height={550}
-            onMouseDown={handleCanvasMouseDown}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseUp={handleCanvasMouseUp}
-            style={{ border: "1px solid #2d2d2d", borderRadius: "8px", cursor: "crosshair", boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}
-          />
-        </main>
+      {/* Global Command Palette search dialog */}
+      {commandPaletteOpen && (
+        <CommandPalette
+          onSelectAction={handleSelectAction}
+          onClose={() => setCommandPaletteOpen(false)}
+          assets={assets}
+          timeframes={timeframes}
+          indicators={indicators_list}
+        />
+      )}
 
-        {/* Right Sidebar - 405 Indicators selector & search */}
-        <aside style={{ width: "280px", borderLeft: "1px solid #2d2d2d", background: "#1a1a1a", display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "10px", borderBottom: "1px solid #2d2d2d" }}>
-            <span style={{ fontSize: "14px", fontWeight: "bold" }}>Search Indicators (405 total)</span>
-            <input
-              type="text"
-              placeholder="Search e.g. SMA, BB, RSI..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: "90%",
-                marginTop: "8px",
-                background: "#2a2a2a",
-                border: "1px solid #444",
-                borderRadius: "4px",
-                padding: "6px 10px",
-                color: "#ffffff"
-              }}
-            />
+      {/* Settings management modal */}
+      {settingsOpen && (
+        <SettingsModal
+          config={config}
+          onConfigChange={setConfig}
+          theme={themeColors}
+          onThemeChange={setThemeColors}
+          onClose={() => setSettingsOpen(false)}
+          onExportJson={handleExportJson}
+          onImportJson={handleImportJson}
+          onExport4KSnapshot={handleExport4KSnapshot}
+        />
+      )}
+
+      {/* Notifications system toasts bar overlay */}
+      <div style={{ position: "fixed", bottom: "15px", right: "15px", display: "flex", flexDirection: "column", gap: "6px", zIndex: 10005 }}>
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            style={{
+              background: "#12121a",
+              borderLeft: t.type === "success" ? "4px solid #4CAF50" : t.type === "warn" ? "4px solid #FF9800" : "4px solid #2196F3",
+              color: "#fff",
+              padding: "10px 16px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "10px"
+            }}
+          >
+            <span>{t.msg}</span>
+            <span
+              onClick={() => setToasts(toasts.filter(x => x.id !== t.id))}
+              style={{ cursor: "pointer", color: "#8a8f9d", fontWeight: "bold" }}
+            >
+              ×
+            </span>
           </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "10px" }}>
-            {filteredIndicators.map((ind) => (
-              <div
-                key={ind}
-                onClick={() => setSelectedIndicator(ind)}
-                style={{
-                  padding: "8px",
-                  cursor: "pointer",
-                  borderRadius: "4px",
-                  background: selectedIndicator === ind ? "rgba(224, 64, 251, 0.15)" : "transparent",
-                  color: selectedIndicator === ind ? "#E040FB" : "#ccc",
-                  fontSize: "13px"
-                }}
-              >
-                {ind}
-              </div>
-            ))}
-          </div>
-        </aside>
+        ))}
       </div>
     </div>
   );

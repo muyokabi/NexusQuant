@@ -17,6 +17,7 @@ export interface DrawingTool {
   containsPoint(p: Point, _ctx: CanvasRenderingContext2D): boolean;
   render(ctx: CanvasRenderingContext2D): void;
   dragNode(nodeIndex: number, newPoint: Point): void;
+  clone(): DrawingTool;
 }
 
 // Vector math helpers
@@ -55,16 +56,20 @@ export class DrawingFactory {
   static create(id: string, type: string, points: Point[]): DrawingTool {
     const style = { color: "#2196F3", lineWidth: 2, fillColor: "rgba(33, 150, 243, 0.15)", font: "12px sans-serif" };
 
-    // Check if the tool belongs to the suite of 50+ tools
     const t_lower = type.toLowerCase();
 
-    // Base implementation for all 50 drawing tools using exact vector mapping
     return {
       id,
       type,
       points: [...points],
       selected: false,
       style,
+      clone() {
+        const cloned = DrawingFactory.create(this.id, this.type, this.points.map(p => ({ ...p })));
+        cloned.selected = this.selected;
+        cloned.style = { ...this.style };
+        return cloned;
+      },
       dragNode(nodeIndex: number, newPoint: Point) {
         if (nodeIndex >= 0 && nodeIndex < this.points.length) {
           this.points[nodeIndex] = { ...newPoint };

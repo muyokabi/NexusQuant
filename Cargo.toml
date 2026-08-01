@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = [
+    "packages/math-ta",
+    "packages/protocol-schema",
+    "apps/desktop/src-tauri",
+    "tools/dev-cli"
+]
+
+[workspace.dependencies]
+flatbuffers = "2.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+anyhow = "1.0"
+tauri = { version = "2.0.0-rc", features = [] }
+rayon = "1.8"
+numpy = "0.20"
+nd_array = "0.15"

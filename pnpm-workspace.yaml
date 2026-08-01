@@ -1,0 +1,5 @@
+packages:
+  - "packages/core-types"
+  - "packages/plugin-sdk/typescript"
+  - "apps/desktop/frontend"
+  - "apps/docs-site"

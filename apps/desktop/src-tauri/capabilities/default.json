@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default-capabilities",
+  "description": "Standard permissions for the NexusQuant desktop app.",
+  "windows": [
+    "*"
+  ],
+  "permissions": [
+    "core:path:default",
+    "core:event:default",
+    "core:window:default"
+  ]
+}

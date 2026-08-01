@@ -1,0 +1,51 @@
+namespace NexusQuant.Protocol;
+
+enum CommandType: byte {
+  Subscribe = 0,
+  Unsubscribe = 1,
+  ReplayStart = 2,
+  ReplayPause = 3,
+  ReplayStop = 4,
+  ReplaySeek = 5,
+  ReplaySpeed = 6,
+  RegisterAlert = 7,
+  TriggerAlert = 8
+}
+
+table ReplayConfig {
+  symbol: string;
+  start_time: long;
+  end_time: long;
+  speed: float;
+}
+
+table SubscriptionPayload {
+  symbols: [string];
+}
+
+table AlertConfig {
+  alert_id: string;
+  symbol: string;
+  condition_type: string;
+  threshold: double;
+  active: bool;
+}
+
+table RPCRequest {
+  request_id: string;
+  command: CommandType;
+  symbol: string;
+  replay_config: ReplayConfig;
+  subscription: SubscriptionPayload;
+  alert_config: AlertConfig;
+  seek_timestamp: long;
+  speed_multiplier: float;
+}
+
+table RPCResponse {
+  request_id: string;
+  success: bool;
+  error_message: string;
+}
+
+root_type RPCRequest;

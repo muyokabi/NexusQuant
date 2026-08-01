@@ -1,0 +1,30 @@
+namespace NexusQuant.Protocol;
+
+table Tick {
+  timestamp: long;
+  symbol: string;
+  price: double;
+  volume: double;
+  bid: double;
+  ask: double;
+  bid_size: double;
+  ask_size: double;
+}
+
+table Candle {
+  timestamp: long;
+  symbol: string;
+  open: double;
+  high: double;
+  low: double;
+  close: double;
+  volume: double;
+  vwap: double;
+}
+
+table MarketDataBatch {
+  ticks: [Tick];
+  candles: [Candle];
+}
+
+root_type MarketDataBatch;

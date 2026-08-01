@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "nexusquant"
+version = "1.0.0"
+description = "NexusQuant Python Platform Engine and Services"
+authors = ["NexusQuant Engineering <engineering@nexusquant.io>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.5"
+duckdb = "^1.0.0"
+pyarrow = "^15.0.0"
+pandas = "^2.2.0"
+supabase = "^2.4.0"
+websockets = "^12.0"
+pydantic = "^2.6.4"
+flatbuffers = "^24.3.25"
+numpy = "^1.26.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

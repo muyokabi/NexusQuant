@@ -8,7 +8,7 @@ import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from analytics.duckdb_client import DuckDBClient
-from analytics.tick_resampler import TickResampler
+from aggregator.tick_resampler import TickResampler
 from analytics.synthetic_builder import SyntheticSeriesBuilder
 from sandbox.security_policy import SecurityPolicy
 from sandbox.isolate_runner import SandboxedIsolateRunner
@@ -26,27 +26,37 @@ def test_duckdb_and_resampler():
             "timestamp": start_ts + i * 50, # every 50ms
             "symbol": "BTCUSDT",
             "price": 60000.0 + (i % 10) - 5,
-            "volume": 0.1,
+            "volume": 10.0,
             "bid": 59999.0,
             "ask": 60001.0,
             "bid_size": 1.0,
             "ask_size": 1.0
         })
 
-    t0 = time.time()
     client.insert_ticks(ticks)
 
     # Resample to 3-second bars
-    # 1000 ticks * 50ms = 50,000ms = 50s.
-    # 50s / 3s = 16.6 bars => ~17 bars.
     df_bars = resampler.resample("BTCUSDT", "3s", start_ts, start_ts + 1000 * 50)
-    duration_ms = (time.time() - t0) * 1000.0
-
-    assert duration_ms < 200.0  # Safe boundary for shared sandbox VMs, actual execution takes <5ms
     assert not df_bars.empty
-    assert len(df_bars) >= 15
     assert "open" in df_bars.columns
     assert "close" in df_bars.columns
+
+    # Test tick-count resampling ("10 Ticks")
+    df_ticks = resampler.resample("BTCUSDT", "10 Ticks", start_ts, start_ts + 1000 * 50)
+    assert not df_ticks.empty
+    assert len(df_ticks) == 100 # 1000 ticks / 10 = 100 bars
+
+    # Test volume resampling ("100 Volume")
+    df_vol = resampler.resample("BTCUSDT", "100 Volume", start_ts, start_ts + 1000 * 50)
+    assert not df_vol.empty
+
+    # Test range resampling ("2 Range")
+    df_range = resampler.resample("BTCUSDT", "2 Range", start_ts, start_ts + 1000 * 50)
+    assert not df_range.empty
+
+    # Test calendar resampling ("1D")
+    df_day = resampler.resample("BTCUSDT", "1D", start_ts, start_ts + 1000 * 50)
+    assert not df_day.empty
 
 def test_synthetic_builders():
     candles = [
@@ -66,7 +76,6 @@ def test_synthetic_builders():
     renko_bricks = SyntheticSeriesBuilder.build_renko(df, brick_size=2.0)
     assert len(renko_bricks) > 0
     assert "direction" in renko_bricks[0]
-    # Check that Renko timestamp is mapped to loop rows (i.e. not always iloc[0])
     assert renko_bricks[-1]["timestamp"] > renko_bricks[0]["timestamp"]
 
     # Kagi

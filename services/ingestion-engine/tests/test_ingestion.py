@@ -38,6 +38,7 @@ def test_deduplicator():
 def test_partitioner():
     tick = {"symbol": "BTC/USDT", "timestamp": 1709299200000, "price": 62000.0} # March 1, 2024
     p_dir, f_name = TickPartitioner.get_partition(tick)
+    assert "crypto" in p_dir
     assert "BTC_USDT" in p_dir
     assert "2024" in p_dir
     assert f_name == "03.parquet"
@@ -65,11 +66,76 @@ def test_parquet_writer():
     ]
 
     writer.write_batch(ticks)
-    # Check that partition file was written
-    # 1700000000 => Nov 14 2023
     expected_path = os.path.join(test_dir, "crypto", "ETHUSDT", "2023", "11.parquet")
     assert os.path.exists(expected_path)
 
     # Cleanup
     if os.path.exists(test_dir):
         shutil.rmtree(test_dir)
+
+def test_multi_market_normalization():
+    # Forex
+    payload_forex = {
+        "instrument": "EUR/USD",
+        "time": 1709299200000,
+        "bids": [{"price": "1.0850", "liquidity": 100000}],
+        "asks": [{"price": "1.0852", "liquidity": 100000}]
+    }
+    norm_forex = MarketDataNormalizer.normalize("multi_market", payload_forex)
+    assert norm_forex is not None
+    assert norm_forex["symbol"] == "EUR/USD"
+    assert norm_forex["price"] == 1.0851
+    assert TickPartitioner.infer_market("EUR/USD") == "forex"
+
+    # Crypto
+    payload_crypto = {
+        "e": "trade",
+        "E": 1709299200000,
+        "s": "BTC/USDT",
+        "p": "62000.00",
+        "q": "1.5"
+    }
+    norm_crypto = MarketDataNormalizer.normalize("multi_market", payload_crypto)
+    assert norm_crypto is not None
+    assert norm_crypto["symbol"] == "BTC/USDT"
+    assert norm_crypto["price"] == 62000.00
+    assert TickPartitioner.infer_market("BTC/USDT") == "crypto"
+
+    # Indices
+    payload_indices = {
+        "sym": "SPX",
+        "t": 1709299200000,
+        "p": 5100.00,
+        "s": 1000
+    }
+    norm_indices = MarketDataNormalizer.normalize("multi_market", payload_indices)
+    assert norm_indices is not None
+    assert norm_indices["symbol"] == "SPX"
+    assert norm_indices["price"] == 5100.00
+    assert TickPartitioner.infer_market("SPX") == "indices_commodities"
+
+    # Stocks
+    payload_stocks = {
+        "sym": "AAPL",
+        "t": 1709299200000,
+        "p": 180.50,
+        "s": 500
+    }
+    norm_stocks = MarketDataNormalizer.normalize("multi_market", payload_stocks)
+    assert norm_stocks is not None
+    assert norm_stocks["symbol"] == "AAPL"
+    assert norm_stocks["price"] == 180.50
+    assert TickPartitioner.infer_market("AAPL") == "stocks"
+
+    # Futures
+    payload_futures = {
+        "symbol": "BTC1!",
+        "timestamp": 1709299200000,
+        "last_price": 63000.00,
+        "volume": 2.0
+    }
+    norm_futures = MarketDataNormalizer.normalize("multi_market", payload_futures)
+    assert norm_futures is not None
+    assert norm_futures["symbol"] == "BTC1!"
+    assert norm_futures["price"] == 63000.00
+    assert TickPartitioner.infer_market("BTC1!") == "futures_options"

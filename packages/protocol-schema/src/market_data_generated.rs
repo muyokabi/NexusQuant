@@ -537,7 +537,7 @@ pub fn get_size_prefixed_root_as_market_data_batch<'a>(buf: &'a [u8]) -> MarketD
 /// catch every error, or be maximally performant. For the
 /// previous, unchecked, behavior use
 /// `root_as_market_data_batch_unchecked`.
-pub fn root_as_market_data_batch(buf: &[u8]) -> Result<MarketDataBatch, flatbuffers::InvalidFlatbuffer> {
+pub fn root_as_market_data_batch(buf: &[u8]) -> Result<MarketDataBatch<'_>, flatbuffers::InvalidFlatbuffer> {
   flatbuffers::root::<MarketDataBatch>(buf)
 }
 #[inline]
@@ -547,7 +547,7 @@ pub fn root_as_market_data_batch(buf: &[u8]) -> Result<MarketDataBatch, flatbuff
 /// catch every error, or be maximally performant. For the
 /// previous, unchecked, behavior use
 /// `size_prefixed_root_as_market_data_batch_unchecked`.
-pub fn size_prefixed_root_as_market_data_batch(buf: &[u8]) -> Result<MarketDataBatch, flatbuffers::InvalidFlatbuffer> {
+pub fn size_prefixed_root_as_market_data_batch(buf: &[u8]) -> Result<MarketDataBatch<'_>, flatbuffers::InvalidFlatbuffer> {
   flatbuffers::size_prefixed_root::<MarketDataBatch>(buf)
 }
 #[inline]
@@ -580,14 +580,14 @@ pub fn size_prefixed_root_as_market_data_batch_with_opts<'b, 'o>(
 /// Assumes, without verification, that a buffer of bytes contains a MarketDataBatch and returns it.
 /// # Safety
 /// Callers must trust the given bytes do indeed contain a valid `MarketDataBatch`.
-pub unsafe fn root_as_market_data_batch_unchecked(buf: &[u8]) -> MarketDataBatch {
+pub unsafe fn root_as_market_data_batch_unchecked(buf: &[u8]) -> MarketDataBatch<'_> {
   flatbuffers::root_unchecked::<MarketDataBatch>(buf)
 }
 #[inline]
 /// Assumes, without verification, that a buffer of bytes contains a size prefixed MarketDataBatch and returns it.
 /// # Safety
 /// Callers must trust the given bytes do indeed contain a valid size prefixed `MarketDataBatch`.
-pub unsafe fn size_prefixed_root_as_market_data_batch_unchecked(buf: &[u8]) -> MarketDataBatch {
+pub unsafe fn size_prefixed_root_as_market_data_batch_unchecked(buf: &[u8]) -> MarketDataBatch<'_> {
   flatbuffers::size_prefixed_root_unchecked::<MarketDataBatch>(buf)
 }
 #[inline]

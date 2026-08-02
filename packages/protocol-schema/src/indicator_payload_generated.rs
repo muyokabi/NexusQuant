@@ -1207,7 +1207,7 @@ pub fn get_size_prefixed_root_as_indicator_payload<'a>(buf: &'a [u8]) -> Indicat
 /// catch every error, or be maximally performant. For the
 /// previous, unchecked, behavior use
 /// `root_as_indicator_payload_unchecked`.
-pub fn root_as_indicator_payload(buf: &[u8]) -> Result<IndicatorPayload, flatbuffers::InvalidFlatbuffer> {
+pub fn root_as_indicator_payload(buf: &[u8]) -> Result<IndicatorPayload<'_>, flatbuffers::InvalidFlatbuffer> {
   flatbuffers::root::<IndicatorPayload>(buf)
 }
 #[inline]
@@ -1217,7 +1217,7 @@ pub fn root_as_indicator_payload(buf: &[u8]) -> Result<IndicatorPayload, flatbuf
 /// catch every error, or be maximally performant. For the
 /// previous, unchecked, behavior use
 /// `size_prefixed_root_as_indicator_payload_unchecked`.
-pub fn size_prefixed_root_as_indicator_payload(buf: &[u8]) -> Result<IndicatorPayload, flatbuffers::InvalidFlatbuffer> {
+pub fn size_prefixed_root_as_indicator_payload(buf: &[u8]) -> Result<IndicatorPayload<'_>, flatbuffers::InvalidFlatbuffer> {
   flatbuffers::size_prefixed_root::<IndicatorPayload>(buf)
 }
 #[inline]
@@ -1250,14 +1250,14 @@ pub fn size_prefixed_root_as_indicator_payload_with_opts<'b, 'o>(
 /// Assumes, without verification, that a buffer of bytes contains a IndicatorPayload and returns it.
 /// # Safety
 /// Callers must trust the given bytes do indeed contain a valid `IndicatorPayload`.
-pub unsafe fn root_as_indicator_payload_unchecked(buf: &[u8]) -> IndicatorPayload {
+pub unsafe fn root_as_indicator_payload_unchecked(buf: &[u8]) -> IndicatorPayload<'_> {
   flatbuffers::root_unchecked::<IndicatorPayload>(buf)
 }
 #[inline]
 /// Assumes, without verification, that a buffer of bytes contains a size prefixed IndicatorPayload and returns it.
 /// # Safety
 /// Callers must trust the given bytes do indeed contain a valid size prefixed `IndicatorPayload`.
-pub unsafe fn size_prefixed_root_as_indicator_payload_unchecked(buf: &[u8]) -> IndicatorPayload {
+pub unsafe fn size_prefixed_root_as_indicator_payload_unchecked(buf: &[u8]) -> IndicatorPayload<'_> {
   flatbuffers::size_prefixed_root_unchecked::<IndicatorPayload>(buf)
 }
 #[inline]

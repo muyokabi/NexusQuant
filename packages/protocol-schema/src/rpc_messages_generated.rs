@@ -854,7 +854,7 @@ pub fn get_size_prefixed_root_as_rpcrequest<'a>(buf: &'a [u8]) -> RPCRequest<'a>
 /// catch every error, or be maximally performant. For the
 /// previous, unchecked, behavior use
 /// `root_as_rpcrequest_unchecked`.
-pub fn root_as_rpcrequest(buf: &[u8]) -> Result<RPCRequest, flatbuffers::InvalidFlatbuffer> {
+pub fn root_as_rpcrequest(buf: &[u8]) -> Result<RPCRequest<'_>, flatbuffers::InvalidFlatbuffer> {
   flatbuffers::root::<RPCRequest>(buf)
 }
 #[inline]
@@ -864,7 +864,7 @@ pub fn root_as_rpcrequest(buf: &[u8]) -> Result<RPCRequest, flatbuffers::Invalid
 /// catch every error, or be maximally performant. For the
 /// previous, unchecked, behavior use
 /// `size_prefixed_root_as_rpcrequest_unchecked`.
-pub fn size_prefixed_root_as_rpcrequest(buf: &[u8]) -> Result<RPCRequest, flatbuffers::InvalidFlatbuffer> {
+pub fn size_prefixed_root_as_rpcrequest(buf: &[u8]) -> Result<RPCRequest<'_>, flatbuffers::InvalidFlatbuffer> {
   flatbuffers::size_prefixed_root::<RPCRequest>(buf)
 }
 #[inline]
@@ -897,14 +897,14 @@ pub fn size_prefixed_root_as_rpcrequest_with_opts<'b, 'o>(
 /// Assumes, without verification, that a buffer of bytes contains a RPCRequest and returns it.
 /// # Safety
 /// Callers must trust the given bytes do indeed contain a valid `RPCRequest`.
-pub unsafe fn root_as_rpcrequest_unchecked(buf: &[u8]) -> RPCRequest {
+pub unsafe fn root_as_rpcrequest_unchecked(buf: &[u8]) -> RPCRequest<'_> {
   flatbuffers::root_unchecked::<RPCRequest>(buf)
 }
 #[inline]
 /// Assumes, without verification, that a buffer of bytes contains a size prefixed RPCRequest and returns it.
 /// # Safety
 /// Callers must trust the given bytes do indeed contain a valid size prefixed `RPCRequest`.
-pub unsafe fn size_prefixed_root_as_rpcrequest_unchecked(buf: &[u8]) -> RPCRequest {
+pub unsafe fn size_prefixed_root_as_rpcrequest_unchecked(buf: &[u8]) -> RPCRequest<'_> {
   flatbuffers::size_prefixed_root_unchecked::<RPCRequest>(buf)
 }
 #[inline]

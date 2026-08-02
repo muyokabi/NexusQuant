@@ -67,18 +67,14 @@ if ($HasPython) {
     Write-Host "Skipping isolated virtual env setups as python was not found." -ForegroundColor Yellow
 }
 
-# Compile web assets only (Tauri binary compiles skipped if cargo is missing)
+# Compile web assets only (building native Electron desktop packages)
 Write-Host "`n[4/4] Compiling native desktop executables and bundles..." -ForegroundColor Blue
 if ($HasPnpm) {
     Write-Host "Running pnpm build to compile Web assets..." -ForegroundColor Green
     pnpm build
 
-    if ($HasCargo) {
-        Write-Host "Compiling native Windows desktop executable (.exe installer) using Tauri..." -ForegroundColor Green
-        pnpm --filter @nexusquant/desktop-frontend tauri
-    } else {
-        Write-Host "Skipping native Tauri compiler check because Rust Cargo was not detected." -ForegroundColor Yellow
-    }
+    Write-Host "Compiling native Windows desktop executable (.exe installer) using Electron..." -ForegroundColor Green
+    pnpm --filter @nexusquant/desktop-frontend electron:build
 } else {
     Write-Host "Skipping monorepo bundle compiles as pnpm was not found." -ForegroundColor Yellow
 }
@@ -88,5 +84,5 @@ Write-Host "  NEXUSQUANT LOCAL WINDOWS BOOTSTRAP COMPLETED SUCCESSFULLY! " -Fore
 Write-Host "==================================================================" -ForegroundColor Green
 Write-Host "Your native Windows installer/executable has been successfully built!"
 Write-Host "You can find your desktop app installer in:"
-Write-Host "  -> apps\desktop\src-tauri\target\release\bundle\"
+Write-Host "  -> apps\desktop\frontend\dist-electron\"
 Write-Host "==================================================================" -ForegroundColor Green

@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "powershell.exe -Command \"Push-Location ../src-tauri; tauri build\""
+    "electron:dev": "ELECTRON_DEV=true electron .",
+    "electron:build": "tsc && vite build && electron-builder"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -20,6 +22,37 @@
     "@vitejs/plugin-react": "^4.3.1",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
-    "@tauri-apps/cli": "2.0.0-rc.0"
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "io.nexusquant.desktop",
+    "productName": "NexusQuant",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "main.cjs",
+      "preload.cjs",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
   }
 }

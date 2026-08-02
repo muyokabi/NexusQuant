@@ -16,6 +16,10 @@ echo -e "${BLUE}================================================================
 echo -e "${BLUE}  NEXUSQUANT PRO — SYSTEM-WIDE LOCAL BOOTSTRAP ENGINE           ${NC}"
 echo -e "${BLUE}==================================================================${NC}"
 
+# Detect Operating System
+OS_TYPE=$(uname -s || echo "Unknown")
+echo -e "${BLUE}Detected Operating System environment: ${OS_TYPE}${NC}"
+
 # Helper function to check command dependencies
 check_dep() {
     local cmd=$1
@@ -33,7 +37,6 @@ echo -e "\n${BLUE}[1/4] Running system tool checks...${NC}"
 HAS_NODE=0 && check_dep "node" "Node.js Runtime" && HAS_NODE=1 || true
 HAS_PNPM=0 && check_dep "pnpm" "PNPM Package Manager" && HAS_PNPM=1 || true
 HAS_PYTHON=0 && check_dep "python3" "Python3 Environment" && HAS_PYTHON=1 || true
-HAS_CARGO=0 && check_dep "cargo" "Rust Compiler & Cargo" && HAS_CARGO=1 || true
 
 # 2. Package installation helpers
 echo -e "\n${BLUE}[2/4] Installing TypeScript/React Workspace dependencies...${NC}"
@@ -44,8 +47,8 @@ else
     echo -e "${YELLOW}Skipping frontend installation because pnpm is not available.${NC}"
 fi
 
-# 3. Python Service Virtual Environment Setup
-echo -e "\n${BLUE}[3/4] Setting up Python Service dependencies...${NC}"
+# 3. Python Service Virtual Environment Setup (Treated as decoupled, separate entities)
+echo -e "\n${BLUE}[3/4] Setting up isolated Python services (treated as distinct entities)...${NC}"
 if [ "$HAS_PYTHON" -eq 1 ]; then
     services=(
         "services/ingestion-engine"
@@ -54,7 +57,7 @@ if [ "$HAS_PYTHON" -eq 1 ]; then
     )
     for service in "${services[@]}"; do
         if [ -d "$service" ]; then
-            echo -e "${GREEN}Bootstrapping virtual environment for $service...${NC}"
+            echo -e "${GREEN}Bootstrapping virtual environment for isolated service: $service...${NC}"
             python3 -m venv "$service/.venv" || true
             source "$service/.venv/bin/activate" || true
             pip install --upgrade pip || true
@@ -65,15 +68,15 @@ if [ "$HAS_PYTHON" -eq 1 ]; then
                 poetry install --no-root || true
             fi
             deactivate || true
-            echo -e "${GREEN}Finished bootstrapping $service.${NC}"
+            echo -e "${GREEN}Finished bootstrapping service: $service.${NC}"
         fi
     done
 else
     echo -e "${YELLOW}Skipping python environments setup because python3 is not available.${NC}"
 fi
 
-# 4. Compiling entire Monorepo Workspace
-echo -e "\n${BLUE}[4/4] Triggering monorepo compilation builds...${NC}"
+# 4. Compiling TS and Web assets only (skipping native Mac/Win Tauri desktop compilations)
+echo -e "\n${BLUE}[4/4] Compiling platform-agnostic web and TypeScript targets...${NC}"
 if [ "$HAS_PNPM" -eq 1 ] && [ "$HAS_NODE" -eq 1 ]; then
     echo -e "${GREEN}Compiling TypeScript workspace packages and frontend application...${NC}"
     pnpm build

@@ -1,16 +1,16 @@
-# NexusQuant Local Bootstrap & Installation Script for Windows Systems
+﻿# NexusQuant Local Bootstrap & Installation Script for Windows Systems
 # Powershell version
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "==================================================================" -ForegroundColor Blue
-Write-Host "  NEXUSQUANT PRO — WINDOWS BOOTSTRAP INSTALLER ENGINE" -ForegroundColor Blue
+Write-Host "  NEXUSQUANT PRO â€” WINDOWS BOOTSTRAP INSTALLER ENGINE" -ForegroundColor Blue
 Write-Host "==================================================================" -ForegroundColor Blue
 
 # Check requirements
 function Check-Command ($cmd, $name) {
     if (Get-Command $cmd -ErrorAction SilentlyContinue) {
-        Write-Host "[✓] Success: $name is available on this system." -ForegroundColor Green
+        Write-Host "[âœ“] Success: $name is available on this system." -ForegroundColor Green
         return $true
     } else {
         Write-Host "[!] Alert: $name ($cmd) is missing." -ForegroundColor Yellow
@@ -90,3 +90,4 @@ Write-Host "Your native Windows installer/executable has been successfully built
 Write-Host "You can find your desktop app installer in:"
 Write-Host "  -> apps\desktop\src-tauri\target\release\bundle\"
 Write-Host "==================================================================" -ForegroundColor Green
+

@@ -37,6 +37,7 @@ echo -e "\n${BLUE}[1/4] Running system tool checks...${NC}"
 HAS_NODE=0 && check_dep "node" "Node.js Runtime" && HAS_NODE=1 || true
 HAS_PNPM=0 && check_dep "pnpm" "PNPM Package Manager" && HAS_PNPM=1 || true
 HAS_PYTHON=0 && check_dep "python3" "Python3 Environment" && HAS_PYTHON=1 || true
+HAS_CARGO=0 && check_dep "cargo" "Rust Cargo Compiler" && HAS_CARGO=1 || true
 
 # 2. Package installation helpers
 echo -e "\n${BLUE}[2/4] Installing TypeScript/React Workspace dependencies...${NC}"
@@ -76,10 +77,17 @@ else
 fi
 
 # 4. Compiling TS and Web assets only (skipping native Mac/Win Tauri desktop compilations)
-echo -e "\n${BLUE}[4/4] Compiling platform-agnostic web and TypeScript targets...${NC}"
+echo -e "\n${BLUE}[4/4] Compiling platform-agnostic web and native executables...${NC}"
 if [ "$HAS_PNPM" -eq 1 ] && [ "$HAS_NODE" -eq 1 ]; then
     echo -e "${GREEN}Compiling TypeScript workspace packages and frontend application...${NC}"
     pnpm build
+
+    if [ "$HAS_CARGO" -eq 1 ]; then
+        echo -e "${GREEN}Compiling native desktop app executable installer using Tauri...${NC}"
+        pnpm --filter @nexusquant/desktop-frontend tauri build
+    else
+        echo -e "${YELLOW}Skipping native Tauri desktop compile because Rust Cargo was not detected.${NC}"
+    fi
 else
     echo -e "${YELLOW}Skipping build because pnpm/node is missing.${NC}"
 fi
@@ -87,8 +95,7 @@ fi
 echo -e "\n${GREEN}==================================================================${NC}"
 echo -e "${GREEN}  NEXUSQUANT LOCAL BOOTSTRAP SUITE COMPLETED SUCCESSFULLY!        ${NC}"
 echo -e "${GREEN}==================================================================${NC}"
-echo -e "You can now run individual services or orchestrate them using:"
-echo -e "  - ${YELLOW}make run-frontend${NC}   : Launches local charting workspace at http://localhost:3000"
-echo -e "  - ${YELLOW}make run-ingestion${NC}  : Starts python multi-db ingestion engine"
-echo -e "  - ${YELLOW}make docker-up${NC}      : Spin up local database docker containers"
+echo -e "Your native platform desktop installer/executable has been successfully built!"
+echo -e "You can find your desktop app installer inside:"
+echo -e "  -> apps/desktop/src-tauri/target/release/bundle/"
 echo -e "=================================================================="

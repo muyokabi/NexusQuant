@@ -30,9 +30,8 @@ To protect remote server bandwidth and maximize client performance, historical c
 
 ```text
 ├── apps/
-│   ├── desktop/                # Tauri wrapper & Rust core workspace
-│   │   ├── src-tauri/          # Tauri system files & local system bridges
-│   │   └── frontend/           # Vite + React + HTML5 Canvas UI Core
+│   ├── desktop/                # Electron desktop wrapper
+│   │   └── frontend/           # Vite + React + HTML5 Canvas UI Core (Main & Preload Process Isolated)
 │   └── docs-site/              # Documentation site static generation
 ├── docs/                       # Technical specifications, API files, guides
 │   ├── USER_GUIDE/             # Charting types & programming reference
@@ -56,7 +55,6 @@ To protect remote server bandwidth and maximize client performance, historical c
 ### Prerequisites
 * **Node.js** v18+ and **pnpm** v9
 * **Python** v3.11+
-* **Cargo** v1.75+ (for Tauri desktop builds)
 
 ### 1. Backend Ingestion Engine Setup
 Configure database connection parameters in your environment:
@@ -86,8 +84,11 @@ pnpm install
 # Start local development server (Local: http://localhost:3000)
 pnpm --filter @nexusquant/desktop-frontend run dev
 
-# Compile production-ready build
-pnpm --filter @nexusquant/desktop-frontend run build
+# Run Electron desktop application in development mode
+pnpm --filter @nexusquant/desktop-frontend run electron:dev
+
+# Compile and package production-ready Electron app
+pnpm --filter @nexusquant/desktop-frontend run electron:build
 ```
 
 ---

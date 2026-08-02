@@ -52,7 +52,7 @@ jobs:
           version: '9'
 
       - name: Install pnpm dependencies (update lockfile)
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Install Linux Build Dependencies
         if: matrix.os == 'ubuntu-22.04'
@@ -96,7 +96,7 @@ jobs:
         if: matrix.platform == 'macos-latest'
         working-directory: apps/desktop
         run: |
-          pnpm install --filter @nexusquant/desktop-frontend
+          pnpm install --filter @nexusquant/desktop-frontend --no-frozen-lockfile
           pnpm exec tauri build --target universal-apple-darwin
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -106,7 +106,7 @@ jobs:
         if: matrix.platform != 'macos-latest'
         working-directory: apps/desktop
         run: |
-          pnpm install --filter @nexusquant/desktop-frontend
+          pnpm install --filter @nexusquant/desktop-frontend --no-frozen-lockfile
           pnpm exec tauri build
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

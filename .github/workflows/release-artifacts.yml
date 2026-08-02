@@ -89,7 +89,7 @@ jobs:
       - name: Build Tauri Universal Binary (macOS)
         if: matrix.platform == 'macos-latest'
         run: |
-          pnpm tauri build --target universal-apple-darwin
+          pnpm --filter @nexusquant/desktop-frontend tauri build --target universal-apple-darwin
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -97,7 +97,7 @@ jobs:
       - name: Build Tauri Standard Binary (Windows/Linux)
         if: matrix.platform != 'macos-latest'
         run: |
-          pnpm tauri build
+          pnpm --filter @nexusquant/desktop-frontend tauri build
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}

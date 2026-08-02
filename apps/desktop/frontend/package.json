@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "cd ../src-tauri ; tauri"
+    "tauri": "powershell.exe -Command \"Push-Location ../src-tauri; tauri build\""
   },
   "dependencies": {
     "react": "^18.3.1",

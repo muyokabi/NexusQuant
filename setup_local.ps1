@@ -75,7 +75,7 @@ if ($HasPnpm) {
 
     if ($HasCargo) {
         Write-Host "Compiling native Windows desktop executable (.exe installer) using Tauri..." -ForegroundColor Green
-        pnpm --filter @nexusquant/desktop-frontend tauri build
+        pnpm --filter @nexusquant/desktop-frontend tauri
     } else {
         Write-Host "Skipping native Tauri compiler check because Rust Cargo was not detected." -ForegroundColor Yellow
     }

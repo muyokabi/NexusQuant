@@ -44,15 +44,26 @@ class SubscriptionPayload(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         return o == 0
 
-def SubscriptionPayloadStart(builder): builder.StartObject(1)
+def SubscriptionPayloadStart(builder):
+    builder.StartObject(1)
+
 def Start(builder):
-    return SubscriptionPayloadStart(builder)
-def SubscriptionPayloadAddSymbols(builder, symbols): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(symbols), 0)
+    SubscriptionPayloadStart(builder)
+
+def SubscriptionPayloadAddSymbols(builder, symbols):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(symbols), 0)
+
 def AddSymbols(builder, symbols):
-    return SubscriptionPayloadAddSymbols(builder, symbols)
-def SubscriptionPayloadStartSymbolsVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    SubscriptionPayloadAddSymbols(builder, symbols)
+
+def SubscriptionPayloadStartSymbolsVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartSymbolsVector(builder, numElems):
     return SubscriptionPayloadStartSymbolsVector(builder, numElems)
-def SubscriptionPayloadEnd(builder): return builder.EndObject()
+
+def SubscriptionPayloadEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return SubscriptionPayloadEnd(builder)

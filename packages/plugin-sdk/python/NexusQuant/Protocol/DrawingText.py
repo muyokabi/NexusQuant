@@ -63,24 +63,44 @@ class DrawingText(object):
             return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
         return 0.0
 
-def DrawingTextStart(builder): builder.StartObject(5)
+def DrawingTextStart(builder):
+    builder.StartObject(5)
+
 def Start(builder):
-    return DrawingTextStart(builder)
-def DrawingTextAddX(builder, x): builder.PrependFloat64Slot(0, x, 0.0)
+    DrawingTextStart(builder)
+
+def DrawingTextAddX(builder, x):
+    builder.PrependFloat64Slot(0, x, 0.0)
+
 def AddX(builder, x):
-    return DrawingTextAddX(builder, x)
-def DrawingTextAddY(builder, y): builder.PrependFloat64Slot(1, y, 0.0)
+    DrawingTextAddX(builder, x)
+
+def DrawingTextAddY(builder, y):
+    builder.PrependFloat64Slot(1, y, 0.0)
+
 def AddY(builder, y):
-    return DrawingTextAddY(builder, y)
-def DrawingTextAddText(builder, text): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(text), 0)
+    DrawingTextAddY(builder, y)
+
+def DrawingTextAddText(builder, text):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(text), 0)
+
 def AddText(builder, text):
-    return DrawingTextAddText(builder, text)
-def DrawingTextAddColor(builder, color): builder.PrependStructSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+    DrawingTextAddText(builder, text)
+
+def DrawingTextAddColor(builder, color):
+    builder.PrependStructSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+
 def AddColor(builder, color):
-    return DrawingTextAddColor(builder, color)
-def DrawingTextAddSize(builder, size): builder.PrependFloat32Slot(4, size, 0.0)
+    DrawingTextAddColor(builder, color)
+
+def DrawingTextAddSize(builder, size):
+    builder.PrependFloat32Slot(4, size, 0.0)
+
 def AddSize(builder, size):
-    return DrawingTextAddSize(builder, size)
-def DrawingTextEnd(builder): return builder.EndObject()
+    DrawingTextAddSize(builder, size)
+
+def DrawingTextEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return DrawingTextEnd(builder)

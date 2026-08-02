@@ -52,21 +52,38 @@ class ReplayConfig(object):
             return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
         return 0.0
 
-def ReplayConfigStart(builder): builder.StartObject(4)
+def ReplayConfigStart(builder):
+    builder.StartObject(4)
+
 def Start(builder):
-    return ReplayConfigStart(builder)
-def ReplayConfigAddSymbol(builder, symbol): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+    ReplayConfigStart(builder)
+
+def ReplayConfigAddSymbol(builder, symbol):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+
 def AddSymbol(builder, symbol):
-    return ReplayConfigAddSymbol(builder, symbol)
-def ReplayConfigAddStartTime(builder, startTime): builder.PrependInt64Slot(1, startTime, 0)
+    ReplayConfigAddSymbol(builder, symbol)
+
+def ReplayConfigAddStartTime(builder, startTime):
+    builder.PrependInt64Slot(1, startTime, 0)
+
 def AddStartTime(builder, startTime):
-    return ReplayConfigAddStartTime(builder, startTime)
-def ReplayConfigAddEndTime(builder, endTime): builder.PrependInt64Slot(2, endTime, 0)
+    ReplayConfigAddStartTime(builder, startTime)
+
+def ReplayConfigAddEndTime(builder, endTime):
+    builder.PrependInt64Slot(2, endTime, 0)
+
 def AddEndTime(builder, endTime):
-    return ReplayConfigAddEndTime(builder, endTime)
-def ReplayConfigAddSpeed(builder, speed): builder.PrependFloat32Slot(3, speed, 0.0)
+    ReplayConfigAddEndTime(builder, endTime)
+
+def ReplayConfigAddSpeed(builder, speed):
+    builder.PrependFloat32Slot(3, speed, 0.0)
+
 def AddSpeed(builder, speed):
-    return ReplayConfigAddSpeed(builder, speed)
-def ReplayConfigEnd(builder): return builder.EndObject()
+    ReplayConfigAddSpeed(builder, speed)
+
+def ReplayConfigEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return ReplayConfigEnd(builder)

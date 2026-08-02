@@ -80,33 +80,62 @@ class Tick(object):
             return self._tab.Get(flatbuffers.number_types.Float64Flags, o + self._tab.Pos)
         return 0.0
 
-def TickStart(builder): builder.StartObject(8)
+def TickStart(builder):
+    builder.StartObject(8)
+
 def Start(builder):
-    return TickStart(builder)
-def TickAddTimestamp(builder, timestamp): builder.PrependInt64Slot(0, timestamp, 0)
+    TickStart(builder)
+
+def TickAddTimestamp(builder, timestamp):
+    builder.PrependInt64Slot(0, timestamp, 0)
+
 def AddTimestamp(builder, timestamp):
-    return TickAddTimestamp(builder, timestamp)
-def TickAddSymbol(builder, symbol): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+    TickAddTimestamp(builder, timestamp)
+
+def TickAddSymbol(builder, symbol):
+    builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+
 def AddSymbol(builder, symbol):
-    return TickAddSymbol(builder, symbol)
-def TickAddPrice(builder, price): builder.PrependFloat64Slot(2, price, 0.0)
+    TickAddSymbol(builder, symbol)
+
+def TickAddPrice(builder, price):
+    builder.PrependFloat64Slot(2, price, 0.0)
+
 def AddPrice(builder, price):
-    return TickAddPrice(builder, price)
-def TickAddVolume(builder, volume): builder.PrependFloat64Slot(3, volume, 0.0)
+    TickAddPrice(builder, price)
+
+def TickAddVolume(builder, volume):
+    builder.PrependFloat64Slot(3, volume, 0.0)
+
 def AddVolume(builder, volume):
-    return TickAddVolume(builder, volume)
-def TickAddBid(builder, bid): builder.PrependFloat64Slot(4, bid, 0.0)
+    TickAddVolume(builder, volume)
+
+def TickAddBid(builder, bid):
+    builder.PrependFloat64Slot(4, bid, 0.0)
+
 def AddBid(builder, bid):
-    return TickAddBid(builder, bid)
-def TickAddAsk(builder, ask): builder.PrependFloat64Slot(5, ask, 0.0)
+    TickAddBid(builder, bid)
+
+def TickAddAsk(builder, ask):
+    builder.PrependFloat64Slot(5, ask, 0.0)
+
 def AddAsk(builder, ask):
-    return TickAddAsk(builder, ask)
-def TickAddBidSize(builder, bidSize): builder.PrependFloat64Slot(6, bidSize, 0.0)
+    TickAddAsk(builder, ask)
+
+def TickAddBidSize(builder, bidSize):
+    builder.PrependFloat64Slot(6, bidSize, 0.0)
+
 def AddBidSize(builder, bidSize):
-    return TickAddBidSize(builder, bidSize)
-def TickAddAskSize(builder, askSize): builder.PrependFloat64Slot(7, askSize, 0.0)
+    TickAddBidSize(builder, bidSize)
+
+def TickAddAskSize(builder, askSize):
+    builder.PrependFloat64Slot(7, askSize, 0.0)
+
 def AddAskSize(builder, askSize):
-    return TickAddAskSize(builder, askSize)
-def TickEnd(builder): return builder.EndObject()
+    TickAddAskSize(builder, askSize)
+
+def TickEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return TickEnd(builder)

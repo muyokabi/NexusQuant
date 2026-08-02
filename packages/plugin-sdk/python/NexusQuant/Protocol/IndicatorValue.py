@@ -85,24 +85,44 @@ class IndicatorValue(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         return o == 0
 
-def IndicatorValueStart(builder): builder.StartObject(3)
+def IndicatorValueStart(builder):
+    builder.StartObject(3)
+
 def Start(builder):
-    return IndicatorValueStart(builder)
-def IndicatorValueAddName(builder, name): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(name), 0)
+    IndicatorValueStart(builder)
+
+def IndicatorValueAddName(builder, name):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(name), 0)
+
 def AddName(builder, name):
-    return IndicatorValueAddName(builder, name)
-def IndicatorValueAddTimestamps(builder, timestamps): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(timestamps), 0)
+    IndicatorValueAddName(builder, name)
+
+def IndicatorValueAddTimestamps(builder, timestamps):
+    builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(timestamps), 0)
+
 def AddTimestamps(builder, timestamps):
-    return IndicatorValueAddTimestamps(builder, timestamps)
-def IndicatorValueStartTimestampsVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+    IndicatorValueAddTimestamps(builder, timestamps)
+
+def IndicatorValueStartTimestampsVector(builder, numElems):
+    return builder.StartVector(8, numElems, 8)
+
 def StartTimestampsVector(builder, numElems):
     return IndicatorValueStartTimestampsVector(builder, numElems)
-def IndicatorValueAddValues(builder, values): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(values), 0)
+
+def IndicatorValueAddValues(builder, values):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(values), 0)
+
 def AddValues(builder, values):
-    return IndicatorValueAddValues(builder, values)
-def IndicatorValueStartValuesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+    IndicatorValueAddValues(builder, values)
+
+def IndicatorValueStartValuesVector(builder, numElems):
+    return builder.StartVector(8, numElems, 8)
+
 def StartValuesVector(builder, numElems):
     return IndicatorValueStartValuesVector(builder, numElems)
-def IndicatorValueEnd(builder): return builder.EndObject()
+
+def IndicatorValueEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return IndicatorValueEnd(builder)

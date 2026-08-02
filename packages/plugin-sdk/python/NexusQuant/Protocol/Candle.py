@@ -80,33 +80,62 @@ class Candle(object):
             return self._tab.Get(flatbuffers.number_types.Float64Flags, o + self._tab.Pos)
         return 0.0
 
-def CandleStart(builder): builder.StartObject(8)
+def CandleStart(builder):
+    builder.StartObject(8)
+
 def Start(builder):
-    return CandleStart(builder)
-def CandleAddTimestamp(builder, timestamp): builder.PrependInt64Slot(0, timestamp, 0)
+    CandleStart(builder)
+
+def CandleAddTimestamp(builder, timestamp):
+    builder.PrependInt64Slot(0, timestamp, 0)
+
 def AddTimestamp(builder, timestamp):
-    return CandleAddTimestamp(builder, timestamp)
-def CandleAddSymbol(builder, symbol): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+    CandleAddTimestamp(builder, timestamp)
+
+def CandleAddSymbol(builder, symbol):
+    builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+
 def AddSymbol(builder, symbol):
-    return CandleAddSymbol(builder, symbol)
-def CandleAddOpen(builder, open): builder.PrependFloat64Slot(2, open, 0.0)
+    CandleAddSymbol(builder, symbol)
+
+def CandleAddOpen(builder, open):
+    builder.PrependFloat64Slot(2, open, 0.0)
+
 def AddOpen(builder, open):
-    return CandleAddOpen(builder, open)
-def CandleAddHigh(builder, high): builder.PrependFloat64Slot(3, high, 0.0)
+    CandleAddOpen(builder, open)
+
+def CandleAddHigh(builder, high):
+    builder.PrependFloat64Slot(3, high, 0.0)
+
 def AddHigh(builder, high):
-    return CandleAddHigh(builder, high)
-def CandleAddLow(builder, low): builder.PrependFloat64Slot(4, low, 0.0)
+    CandleAddHigh(builder, high)
+
+def CandleAddLow(builder, low):
+    builder.PrependFloat64Slot(4, low, 0.0)
+
 def AddLow(builder, low):
-    return CandleAddLow(builder, low)
-def CandleAddClose(builder, close): builder.PrependFloat64Slot(5, close, 0.0)
+    CandleAddLow(builder, low)
+
+def CandleAddClose(builder, close):
+    builder.PrependFloat64Slot(5, close, 0.0)
+
 def AddClose(builder, close):
-    return CandleAddClose(builder, close)
-def CandleAddVolume(builder, volume): builder.PrependFloat64Slot(6, volume, 0.0)
+    CandleAddClose(builder, close)
+
+def CandleAddVolume(builder, volume):
+    builder.PrependFloat64Slot(6, volume, 0.0)
+
 def AddVolume(builder, volume):
-    return CandleAddVolume(builder, volume)
-def CandleAddVwap(builder, vwap): builder.PrependFloat64Slot(7, vwap, 0.0)
+    CandleAddVolume(builder, volume)
+
+def CandleAddVwap(builder, vwap):
+    builder.PrependFloat64Slot(7, vwap, 0.0)
+
 def AddVwap(builder, vwap):
-    return CandleAddVwap(builder, vwap)
-def CandleEnd(builder): return builder.EndObject()
+    CandleAddVwap(builder, vwap)
+
+def CandleEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return CandleEnd(builder)

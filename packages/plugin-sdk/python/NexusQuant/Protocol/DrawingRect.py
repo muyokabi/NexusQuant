@@ -70,27 +70,50 @@ class DrawingRect(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
-def DrawingRectStart(builder): builder.StartObject(6)
+def DrawingRectStart(builder):
+    builder.StartObject(6)
+
 def Start(builder):
-    return DrawingRectStart(builder)
-def DrawingRectAddX1(builder, x1): builder.PrependFloat64Slot(0, x1, 0.0)
+    DrawingRectStart(builder)
+
+def DrawingRectAddX1(builder, x1):
+    builder.PrependFloat64Slot(0, x1, 0.0)
+
 def AddX1(builder, x1):
-    return DrawingRectAddX1(builder, x1)
-def DrawingRectAddY1(builder, y1): builder.PrependFloat64Slot(1, y1, 0.0)
+    DrawingRectAddX1(builder, x1)
+
+def DrawingRectAddY1(builder, y1):
+    builder.PrependFloat64Slot(1, y1, 0.0)
+
 def AddY1(builder, y1):
-    return DrawingRectAddY1(builder, y1)
-def DrawingRectAddX2(builder, x2): builder.PrependFloat64Slot(2, x2, 0.0)
+    DrawingRectAddY1(builder, y1)
+
+def DrawingRectAddX2(builder, x2):
+    builder.PrependFloat64Slot(2, x2, 0.0)
+
 def AddX2(builder, x2):
-    return DrawingRectAddX2(builder, x2)
-def DrawingRectAddY2(builder, y2): builder.PrependFloat64Slot(3, y2, 0.0)
+    DrawingRectAddX2(builder, x2)
+
+def DrawingRectAddY2(builder, y2):
+    builder.PrependFloat64Slot(3, y2, 0.0)
+
 def AddY2(builder, y2):
-    return DrawingRectAddY2(builder, y2)
-def DrawingRectAddColor(builder, color): builder.PrependStructSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+    DrawingRectAddY2(builder, y2)
+
+def DrawingRectAddColor(builder, color):
+    builder.PrependStructSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+
 def AddColor(builder, color):
-    return DrawingRectAddColor(builder, color)
-def DrawingRectAddFill(builder, fill): builder.PrependBoolSlot(5, fill, 0)
+    DrawingRectAddColor(builder, color)
+
+def DrawingRectAddFill(builder, fill):
+    builder.PrependBoolSlot(5, fill, 0)
+
 def AddFill(builder, fill):
-    return DrawingRectAddFill(builder, fill)
-def DrawingRectEnd(builder): return builder.EndObject()
+    DrawingRectAddFill(builder, fill)
+
+def DrawingRectEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return DrawingRectEnd(builder)

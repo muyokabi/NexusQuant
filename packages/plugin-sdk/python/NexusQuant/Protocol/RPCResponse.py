@@ -45,18 +45,32 @@ class RPCResponse(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
-def RPCResponseStart(builder): builder.StartObject(3)
+def RPCResponseStart(builder):
+    builder.StartObject(3)
+
 def Start(builder):
-    return RPCResponseStart(builder)
-def RPCResponseAddRequestId(builder, requestId): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(requestId), 0)
+    RPCResponseStart(builder)
+
+def RPCResponseAddRequestId(builder, requestId):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(requestId), 0)
+
 def AddRequestId(builder, requestId):
-    return RPCResponseAddRequestId(builder, requestId)
-def RPCResponseAddSuccess(builder, success): builder.PrependBoolSlot(1, success, 0)
+    RPCResponseAddRequestId(builder, requestId)
+
+def RPCResponseAddSuccess(builder, success):
+    builder.PrependBoolSlot(1, success, 0)
+
 def AddSuccess(builder, success):
-    return RPCResponseAddSuccess(builder, success)
-def RPCResponseAddErrorMessage(builder, errorMessage): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(errorMessage), 0)
+    RPCResponseAddSuccess(builder, success)
+
+def RPCResponseAddErrorMessage(builder, errorMessage):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(errorMessage), 0)
+
 def AddErrorMessage(builder, errorMessage):
-    return RPCResponseAddErrorMessage(builder, errorMessage)
-def RPCResponseEnd(builder): return builder.EndObject()
+    RPCResponseAddErrorMessage(builder, errorMessage)
+
+def RPCResponseEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return RPCResponseEnd(builder)

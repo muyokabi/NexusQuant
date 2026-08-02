@@ -92,33 +92,62 @@ class RPCRequest(object):
             return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
         return 0.0
 
-def RPCRequestStart(builder): builder.StartObject(8)
+def RPCRequestStart(builder):
+    builder.StartObject(8)
+
 def Start(builder):
-    return RPCRequestStart(builder)
-def RPCRequestAddRequestId(builder, requestId): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(requestId), 0)
+    RPCRequestStart(builder)
+
+def RPCRequestAddRequestId(builder, requestId):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(requestId), 0)
+
 def AddRequestId(builder, requestId):
-    return RPCRequestAddRequestId(builder, requestId)
-def RPCRequestAddCommand(builder, command): builder.PrependInt8Slot(1, command, 0)
+    RPCRequestAddRequestId(builder, requestId)
+
+def RPCRequestAddCommand(builder, command):
+    builder.PrependInt8Slot(1, command, 0)
+
 def AddCommand(builder, command):
-    return RPCRequestAddCommand(builder, command)
-def RPCRequestAddSymbol(builder, symbol): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+    RPCRequestAddCommand(builder, command)
+
+def RPCRequestAddSymbol(builder, symbol):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+
 def AddSymbol(builder, symbol):
-    return RPCRequestAddSymbol(builder, symbol)
-def RPCRequestAddReplayConfig(builder, replayConfig): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(replayConfig), 0)
+    RPCRequestAddSymbol(builder, symbol)
+
+def RPCRequestAddReplayConfig(builder, replayConfig):
+    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(replayConfig), 0)
+
 def AddReplayConfig(builder, replayConfig):
-    return RPCRequestAddReplayConfig(builder, replayConfig)
-def RPCRequestAddSubscription(builder, subscription): builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(subscription), 0)
+    RPCRequestAddReplayConfig(builder, replayConfig)
+
+def RPCRequestAddSubscription(builder, subscription):
+    builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(subscription), 0)
+
 def AddSubscription(builder, subscription):
-    return RPCRequestAddSubscription(builder, subscription)
-def RPCRequestAddAlertConfig(builder, alertConfig): builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(alertConfig), 0)
+    RPCRequestAddSubscription(builder, subscription)
+
+def RPCRequestAddAlertConfig(builder, alertConfig):
+    builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(alertConfig), 0)
+
 def AddAlertConfig(builder, alertConfig):
-    return RPCRequestAddAlertConfig(builder, alertConfig)
-def RPCRequestAddSeekTimestamp(builder, seekTimestamp): builder.PrependInt64Slot(6, seekTimestamp, 0)
+    RPCRequestAddAlertConfig(builder, alertConfig)
+
+def RPCRequestAddSeekTimestamp(builder, seekTimestamp):
+    builder.PrependInt64Slot(6, seekTimestamp, 0)
+
 def AddSeekTimestamp(builder, seekTimestamp):
-    return RPCRequestAddSeekTimestamp(builder, seekTimestamp)
-def RPCRequestAddSpeedMultiplier(builder, speedMultiplier): builder.PrependFloat32Slot(7, speedMultiplier, 0.0)
+    RPCRequestAddSeekTimestamp(builder, seekTimestamp)
+
+def RPCRequestAddSpeedMultiplier(builder, speedMultiplier):
+    builder.PrependFloat32Slot(7, speedMultiplier, 0.0)
+
 def AddSpeedMultiplier(builder, speedMultiplier):
-    return RPCRequestAddSpeedMultiplier(builder, speedMultiplier)
-def RPCRequestEnd(builder): return builder.EndObject()
+    RPCRequestAddSpeedMultiplier(builder, speedMultiplier)
+
+def RPCRequestEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return RPCRequestEnd(builder)

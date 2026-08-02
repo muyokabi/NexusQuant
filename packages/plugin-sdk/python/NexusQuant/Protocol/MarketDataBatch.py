@@ -74,21 +74,38 @@ class MarketDataBatch(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
-def MarketDataBatchStart(builder): builder.StartObject(2)
+def MarketDataBatchStart(builder):
+    builder.StartObject(2)
+
 def Start(builder):
-    return MarketDataBatchStart(builder)
-def MarketDataBatchAddTicks(builder, ticks): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(ticks), 0)
+    MarketDataBatchStart(builder)
+
+def MarketDataBatchAddTicks(builder, ticks):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(ticks), 0)
+
 def AddTicks(builder, ticks):
-    return MarketDataBatchAddTicks(builder, ticks)
-def MarketDataBatchStartTicksVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    MarketDataBatchAddTicks(builder, ticks)
+
+def MarketDataBatchStartTicksVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartTicksVector(builder, numElems):
     return MarketDataBatchStartTicksVector(builder, numElems)
-def MarketDataBatchAddCandles(builder, candles): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(candles), 0)
+
+def MarketDataBatchAddCandles(builder, candles):
+    builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(candles), 0)
+
 def AddCandles(builder, candles):
-    return MarketDataBatchAddCandles(builder, candles)
-def MarketDataBatchStartCandlesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    MarketDataBatchAddCandles(builder, candles)
+
+def MarketDataBatchStartCandlesVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartCandlesVector(builder, numElems):
     return MarketDataBatchStartCandlesVector(builder, numElems)
-def MarketDataBatchEnd(builder): return builder.EndObject()
+
+def MarketDataBatchEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return MarketDataBatchEnd(builder)

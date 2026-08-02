@@ -156,42 +156,80 @@ class IndicatorPayload(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
         return o == 0
 
-def IndicatorPayloadStart(builder): builder.StartObject(6)
+def IndicatorPayloadStart(builder):
+    builder.StartObject(6)
+
 def Start(builder):
-    return IndicatorPayloadStart(builder)
-def IndicatorPayloadAddIndicatorId(builder, indicatorId): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(indicatorId), 0)
+    IndicatorPayloadStart(builder)
+
+def IndicatorPayloadAddIndicatorId(builder, indicatorId):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(indicatorId), 0)
+
 def AddIndicatorId(builder, indicatorId):
-    return IndicatorPayloadAddIndicatorId(builder, indicatorId)
-def IndicatorPayloadAddValues(builder, values): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(values), 0)
+    IndicatorPayloadAddIndicatorId(builder, indicatorId)
+
+def IndicatorPayloadAddValues(builder, values):
+    builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(values), 0)
+
 def AddValues(builder, values):
-    return IndicatorPayloadAddValues(builder, values)
-def IndicatorPayloadStartValuesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    IndicatorPayloadAddValues(builder, values)
+
+def IndicatorPayloadStartValuesVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartValuesVector(builder, numElems):
     return IndicatorPayloadStartValuesVector(builder, numElems)
-def IndicatorPayloadAddLines(builder, lines): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(lines), 0)
+
+def IndicatorPayloadAddLines(builder, lines):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(lines), 0)
+
 def AddLines(builder, lines):
-    return IndicatorPayloadAddLines(builder, lines)
-def IndicatorPayloadStartLinesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    IndicatorPayloadAddLines(builder, lines)
+
+def IndicatorPayloadStartLinesVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartLinesVector(builder, numElems):
     return IndicatorPayloadStartLinesVector(builder, numElems)
-def IndicatorPayloadAddRectangles(builder, rectangles): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(rectangles), 0)
+
+def IndicatorPayloadAddRectangles(builder, rectangles):
+    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(rectangles), 0)
+
 def AddRectangles(builder, rectangles):
-    return IndicatorPayloadAddRectangles(builder, rectangles)
-def IndicatorPayloadStartRectanglesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    IndicatorPayloadAddRectangles(builder, rectangles)
+
+def IndicatorPayloadStartRectanglesVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartRectanglesVector(builder, numElems):
     return IndicatorPayloadStartRectanglesVector(builder, numElems)
-def IndicatorPayloadAddPolygons(builder, polygons): builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(polygons), 0)
+
+def IndicatorPayloadAddPolygons(builder, polygons):
+    builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(polygons), 0)
+
 def AddPolygons(builder, polygons):
-    return IndicatorPayloadAddPolygons(builder, polygons)
-def IndicatorPayloadStartPolygonsVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    IndicatorPayloadAddPolygons(builder, polygons)
+
+def IndicatorPayloadStartPolygonsVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartPolygonsVector(builder, numElems):
     return IndicatorPayloadStartPolygonsVector(builder, numElems)
-def IndicatorPayloadAddTexts(builder, texts): builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(texts), 0)
+
+def IndicatorPayloadAddTexts(builder, texts):
+    builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(texts), 0)
+
 def AddTexts(builder, texts):
-    return IndicatorPayloadAddTexts(builder, texts)
-def IndicatorPayloadStartTextsVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+    IndicatorPayloadAddTexts(builder, texts)
+
+def IndicatorPayloadStartTextsVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
 def StartTextsVector(builder, numElems):
     return IndicatorPayloadStartTextsVector(builder, numElems)
-def IndicatorPayloadEnd(builder): return builder.EndObject()
+
+def IndicatorPayloadEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return IndicatorPayloadEnd(builder)

@@ -59,24 +59,44 @@ class AlertConfig(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
-def AlertConfigStart(builder): builder.StartObject(5)
+def AlertConfigStart(builder):
+    builder.StartObject(5)
+
 def Start(builder):
-    return AlertConfigStart(builder)
-def AlertConfigAddAlertId(builder, alertId): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(alertId), 0)
+    AlertConfigStart(builder)
+
+def AlertConfigAddAlertId(builder, alertId):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(alertId), 0)
+
 def AddAlertId(builder, alertId):
-    return AlertConfigAddAlertId(builder, alertId)
-def AlertConfigAddSymbol(builder, symbol): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+    AlertConfigAddAlertId(builder, alertId)
+
+def AlertConfigAddSymbol(builder, symbol):
+    builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(symbol), 0)
+
 def AddSymbol(builder, symbol):
-    return AlertConfigAddSymbol(builder, symbol)
-def AlertConfigAddConditionType(builder, conditionType): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(conditionType), 0)
+    AlertConfigAddSymbol(builder, symbol)
+
+def AlertConfigAddConditionType(builder, conditionType):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(conditionType), 0)
+
 def AddConditionType(builder, conditionType):
-    return AlertConfigAddConditionType(builder, conditionType)
-def AlertConfigAddThreshold(builder, threshold): builder.PrependFloat64Slot(3, threshold, 0.0)
+    AlertConfigAddConditionType(builder, conditionType)
+
+def AlertConfigAddThreshold(builder, threshold):
+    builder.PrependFloat64Slot(3, threshold, 0.0)
+
 def AddThreshold(builder, threshold):
-    return AlertConfigAddThreshold(builder, threshold)
-def AlertConfigAddActive(builder, active): builder.PrependBoolSlot(4, active, 0)
+    AlertConfigAddThreshold(builder, threshold)
+
+def AlertConfigAddActive(builder, active):
+    builder.PrependBoolSlot(4, active, 0)
+
 def AddActive(builder, active):
-    return AlertConfigAddActive(builder, active)
-def AlertConfigEnd(builder): return builder.EndObject()
+    AlertConfigAddActive(builder, active)
+
+def AlertConfigEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return AlertConfigEnd(builder)

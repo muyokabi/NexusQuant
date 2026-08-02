@@ -64,21 +64,38 @@ class DrawingLine(object):
             return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
         return 0.0
 
-def DrawingLineStart(builder): builder.StartObject(4)
+def DrawingLineStart(builder):
+    builder.StartObject(4)
+
 def Start(builder):
-    return DrawingLineStart(builder)
-def DrawingLineAddStart(builder, start): builder.PrependStructSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(start), 0)
+    DrawingLineStart(builder)
+
+def DrawingLineAddStart(builder, start):
+    builder.PrependStructSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(start), 0)
+
 def AddStart(builder, start):
-    return DrawingLineAddStart(builder, start)
-def DrawingLineAddEnd(builder, end): builder.PrependStructSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(end), 0)
+    DrawingLineAddStart(builder, start)
+
+def DrawingLineAddEnd(builder, end):
+    builder.PrependStructSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(end), 0)
+
 def AddEnd(builder, end):
-    return DrawingLineAddEnd(builder, end)
-def DrawingLineAddColor(builder, color): builder.PrependStructSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+    DrawingLineAddEnd(builder, end)
+
+def DrawingLineAddColor(builder, color):
+    builder.PrependStructSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+
 def AddColor(builder, color):
-    return DrawingLineAddColor(builder, color)
-def DrawingLineAddWidth(builder, width): builder.PrependFloat32Slot(3, width, 0.0)
+    DrawingLineAddColor(builder, color)
+
+def DrawingLineAddWidth(builder, width):
+    builder.PrependFloat32Slot(3, width, 0.0)
+
 def AddWidth(builder, width):
-    return DrawingLineAddWidth(builder, width)
-def DrawingLineEnd(builder): return builder.EndObject()
+    DrawingLineAddWidth(builder, width)
+
+def DrawingLineEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return DrawingLineEnd(builder)

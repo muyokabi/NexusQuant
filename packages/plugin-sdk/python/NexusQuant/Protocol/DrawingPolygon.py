@@ -66,21 +66,38 @@ class DrawingPolygon(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
-def DrawingPolygonStart(builder): builder.StartObject(3)
+def DrawingPolygonStart(builder):
+    builder.StartObject(3)
+
 def Start(builder):
-    return DrawingPolygonStart(builder)
-def DrawingPolygonAddPoints(builder, points): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(points), 0)
+    DrawingPolygonStart(builder)
+
+def DrawingPolygonAddPoints(builder, points):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(points), 0)
+
 def AddPoints(builder, points):
-    return DrawingPolygonAddPoints(builder, points)
-def DrawingPolygonStartPointsVector(builder, numElems): return builder.StartVector(16, numElems, 8)
+    DrawingPolygonAddPoints(builder, points)
+
+def DrawingPolygonStartPointsVector(builder, numElems):
+    return builder.StartVector(16, numElems, 8)
+
 def StartPointsVector(builder, numElems):
     return DrawingPolygonStartPointsVector(builder, numElems)
-def DrawingPolygonAddColor(builder, color): builder.PrependStructSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+
+def DrawingPolygonAddColor(builder, color):
+    builder.PrependStructSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(color), 0)
+
 def AddColor(builder, color):
-    return DrawingPolygonAddColor(builder, color)
-def DrawingPolygonAddFill(builder, fill): builder.PrependBoolSlot(2, fill, 0)
+    DrawingPolygonAddColor(builder, color)
+
+def DrawingPolygonAddFill(builder, fill):
+    builder.PrependBoolSlot(2, fill, 0)
+
 def AddFill(builder, fill):
-    return DrawingPolygonAddFill(builder, fill)
-def DrawingPolygonEnd(builder): return builder.EndObject()
+    DrawingPolygonAddFill(builder, fill)
+
+def DrawingPolygonEnd(builder):
+    return builder.EndObject()
+
 def End(builder):
     return DrawingPolygonEnd(builder)

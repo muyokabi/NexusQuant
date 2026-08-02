@@ -1,72 +1,109 @@
-# NexusQuant Pro — Institution-Grade Professional Trading Terminal
+# NexusQuant Pro — Institution-Grade Professional Trading & Analytics Platform
 
-Welcome to the **NexusQuant Pro Trading Terminal**, an elite, institution-grade frontend charting and multi-workspace workspace container designed for high-frequency trading desk set ups, professional scalp setups, and multi-monitor power users.
-
-This terminal outclasses generic web charts with custom-designed hardware-accelerated Canvas/WebGL visualization, modular indicator calculators, local workspace persistence synchronization, global command palettes, and advanced terminal settings matrices.
+Welcome to **NexusQuant Pro**, an elite, open-source professional charting workstation and distributed quantitative analytics platform. Engineered for high-frequency trading desks, systematic quantitative analysts, and professional scalpers, NexusQuant Pro outclasses standard web charting apps through low-latency hardware-accelerated Canvas/WebGL visualization, a dynamic multi-database ingestion pipeline, and local persistence synchronization.
 
 ---
 
-## 🚀 Key Architectural Pillars
+## 🧭 Key Architectural Pillars
 
 ### 1. Unified 5-Zone Grid Workspace
-- **Dynamic Docking Layout:** Supports tiled viewports, split screens, floating detached popouts, and integrated browser-within-app tabs.
-- **Workspace Presets:** Fast switching between configurations like *Macro Overview*, *Scalper Terminal*, *Orderflow & Footprint*, and *Multi-Timeframe Matrix*.
-- **Persistence:** Local state is hydrated from local storage across sessions, preserving assets, parameters, and vector drawing coordinates.
+The user interface is strictly partitioned into five layout zones matching professional trading systems:
+* **Zone 1: Top Control Bar (48px):** Houses ticker search, timeframe selectors, chart types, indicators drawer, alert creators, playback controllers, splitter, layout management, and direct order execute panels.
+* **Zone 2: Left Drawing Column (52px):** Hosts cursor tracking, trend lines, Fibonacci arcs/wedges, shapes, texts, harmonic patterns, price ruler, pencil stay, magnet snap, padlock locks, and clean tools.
+* **Zone 3: Main Chart Canvas Viewport:** Centered canvas stage rendering price candles, indicators, overlays, order lines, and active cursor crosshairs with zero latency.
+* **Zone 4: Right Widget Dock (Collapsible 320-380px):** Watchlist multi-asset tracking, active alert rules logs, drawing tree hierarchies, volume hotlists, calendar macro events, and Depth of Market (DOM).
+* **Zone 5: Bottom Panel Drawer (240-400px):** Asset screeners table, Pine Script IDE with terminal compile logs, strategy backtester metrics, and active broker positions/orders sheets.
 
-### 2. Custom 21-Chart Canvas Engine
-Native high-efficiency painting algorithm support for 21 visualization types:
-1. **Standard Candlesticks**
-2. **Hollow Candlesticks**
-3. **Volume Candlesticks** (Width modulated by tick volume weight)
-4. **Heikin-Ashi** (Trend smoothing calculations)
-5. **Renko Bricks** (Time-independent price boxes)
-6. **Kagi Trend Lines** (Structural trend reversals)
-7. **Point & Figure** (Classic Xs and Os columns)
-8. **Line Break** (Breakout comparing bars)
-9. **Classic Line** (Close connection)
-10. **Line with Markers** (Continuous with node dots)
-11. **Step Line** (Staircase transitions)
-12. **Standard Area** (Gradient background)
-13. **HLC Area** (High-Low-Close boundaries)
-14. **Baseline** (Delta compared to baseline)
-15. **Bar Chart (OHLC)** (Traditional tick wicks)
-16. **High-Low Bars** (Range without bodies)
-17. **Range Bars** (Constant price move)
-18. **Columns Chart** (Macro histograms)
-19. **Volume Footprint** (Bid vs Ask volume overlays)
-20. **Time Price Opportunity (TPO / Market Profile)**
-21. **Session Volume Profile (SVP)**
+### 2. High-Performance Multi-Database Ingestion Engine
+The ingestion server dynamically routes market telemetry to chosen database backends using the environment variable `DB_TYPE`:
+* **Supabase:** Synchronizes metadata and live ticker tick events directly via transactional REST API.
+* **PostgreSQL (Generic/RDS):** Leverages connection pooling to issue robust upsert transactions.
+* **TimescaleDB:** Tailored for time-series hypertables with hypertable upserts.
+* **Local SQLite:** Zero-dependency embedded database for local desktop storage.
 
-### 3. Integrated Global Command Palette
-- **Access Hotkey:** Toggle the command palette instantly with `Ctrl+K` or `Cmd+K`.
-- **Fast Commands:** Jump tickers, change timeframes (e.g. `1m`, `5m`, `15m`, `1H`), apply indicator overlays, and swap visual themes.
+### 3. Local Caching & Bandwidth Conservation
+To protect remote server bandwidth and maximize client performance, historical candle data is kept in local client-side caches (LocalStorage/IndexedDB) with a 10-minute cache expiration (TTL). The chart loads cached historical candles instantly, fetching updates only if stale, and appends real-time streaming updates smoothly.
 
 ---
 
-## 🛠️ Build and Development
+## 📦 Directory Structure
 
-The repository utilizes a monorepo structure managed with `pnpm` workspaces.
+```text
+├── apps/
+│   ├── desktop/                # Tauri wrapper & Rust core workspace
+│   │   ├── src-tauri/          # Tauri system files & local system bridges
+│   │   └── frontend/           # Vite + React + HTML5 Canvas UI Core
+│   └── docs-site/              # Documentation site static generation
+├── docs/                       # Technical specifications, API files, guides
+│   ├── USER_GUIDE/             # Charting types & programming reference
+│   ├── DEVELOPMENT/            # Ingestion service & components docs
+│   ├── API/                    # Rest, WebSocket & FlatBuffers protocols
+│   └── ADR/                    # Architectural Decision Records
+├── packages/
+│   ├── core-types/             # Shared TypeScript schemas & definitions
+│   └── plugin-sdk/             # Official Python plugin module
+├── plugins/                    # Community & Official quant plugin libraries
+└── services/
+    ├── ingestion-engine/       # Real-time multi-db Python ingestion server
+    ├── alert-service/          # High-speed trigger calculation service
+    └── replay-service/         # Playback simulator & replay microservice
+```
 
-### Frontend Development
+---
 
+## 🛠️ Installation & Getting Started
+
+### Prerequisites
+* **Node.js** v18+ and **pnpm** v9
+* **Python** v3.11+
+* **Cargo** v1.75+ (for Tauri desktop builds)
+
+### 1. Backend Ingestion Engine Setup
+Configure database connection parameters in your environment:
+```bash
+export DB_TYPE=sqlite                # Options: sqlite, postgres, timescaledb, supabase
+export DB_FILE=storage/nexusquant.db # SQLite only
+export DB_HOST=localhost             # Postgres only
+export DB_PORT=5432
+export DB_NAME=nexusquant
+export DB_USER=postgres
+export DB_PASSWORD=my-secure-password
+```
+
+Start the ingestion server:
+```bash
+cd services/ingestion-engine
+pip install -r requirements.txt      # Or use poetry install
+python src/main.py
+```
+
+### 2. Frontend Desktop Workspace Setup
+From the repository root:
 ```bash
 # Install dependencies
 pnpm install
 
-# Run the local Vite dev server
-pnpm --filter @nexusquant/desktop-frontend dev
+# Start local development server (Local: http://localhost:3000)
+pnpm --filter @nexusquant/desktop-frontend run dev
 
-# Build for production and verify typings
-pnpm --filter @nexusquant/desktop-frontend build
+# Compile production-ready build
+pnpm --filter @nexusquant/desktop-frontend run build
 ```
 
 ---
 
-## 🎬 Testing & Verification
+## 📖 Complete Documentation Suite
+To dive deeper, review our specialized documents located inside the `docs/` folder:
 
-We practice visual verification using automated Playwright journeys:
-```bash
-# Run the end-to-end user verification journeys
-python /home/jules/verification/verify_terminal.py
-```
-This launches a headless browser, interacts with preset switches and color customizers, verifies performance caps, and saves screenshots to `/home/jules/verification/screenshots/verification.png`.
+* **Guides & Visualizations:**
+  - [Custom series and 21 visualizer configurations](docs/USER_GUIDE/CUSTOM_SERIES.md)
+  - [Pine Script and indicator programming reference](docs/USER_GUIDE/INDICATOR_PROGRAMMING.md)
+* **Backend & API Specifications:**
+  - [Ingestion service ingestion pipeline](docs/DEVELOPMENT/INGESTION_SERVICE.md)
+  - [REST API JSON spec](docs/API/REST_SPEC.openapi.json)
+  - [WebSocket connection and frames spec](docs/API/WEBSOCKET_PROTO.md)
+* **Architecture Decisions (ADRs):**
+  - [ADR 0001: Monorepo workspace architecture](docs/ADR/0001-monorepo-architecture.md)
+  - [ADR 0002: FlatBuffers schema over IPC](docs/ADR/0002-ipc-protocol-flatbuffers.md)
+  - [ADR 0003: DuckDB analytics storage engine](docs/ADR/0003-duckdb-storage-engine.md)
+  - [ADR 0004: WebGL/Canvas multi-pane renderer](docs/ADR/0004-webgl-canvas-renderer.md)

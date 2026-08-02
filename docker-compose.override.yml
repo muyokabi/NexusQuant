@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  database:
+    # Developer override: enable verbose logs for query profiling
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_duration=on"]
+
+  ingestion:
+    # Developer overrides: enable local live reload mounting and debug telemetry
+    volumes:
+      - ./services/ingestion-engine/src:/app/src
+    environment:
+      - QUANT_FLUSH_THRESHOLD=50
+      - QUANT_TELEMETRY_PORT=9090

@@ -1,9 +1,8 @@
 .PHONY: install build test run-frontend run-ingestion docker-up docker-down clean
 
-# Setup all workspace environments
+# System-wide local bootstrap setup
 install:
-	pnpm install
-	cd services/ingestion-engine && pip install -r requirements.txt || true
+	./setup_local.sh
 
 # Compile all workspace applications and packages
 build:

@@ -76,18 +76,14 @@ else
     echo -e "${YELLOW}Skipping python environments setup because python3 is not available.${NC}"
 fi
 
-# 4. Compiling TS and Web assets only (skipping native Mac/Win Tauri desktop compilations)
+# 4. Compiling TS and Web assets only (building native Electron desktop packages)
 echo -e "\n${BLUE}[4/4] Compiling platform-agnostic web and native executables...${NC}"
 if [ "$HAS_PNPM" -eq 1 ] && [ "$HAS_NODE" -eq 1 ]; then
     echo -e "${GREEN}Compiling TypeScript workspace packages and frontend application...${NC}"
     pnpm build
 
-    if [ "$HAS_CARGO" -eq 1 ]; then
-        echo -e "${GREEN}Compiling native desktop app executable installer using Tauri...${NC}"
-        pnpm --filter @nexusquant/desktop-frontend tauri build
-    else
-        echo -e "${YELLOW}Skipping native Tauri desktop compile because Rust Cargo was not detected.${NC}"
-    fi
+    echo -e "${GREEN}Compiling native desktop app executable installer using Electron...${NC}"
+    pnpm --filter @nexusquant/desktop-frontend electron:build
 else
     echo -e "${YELLOW}Skipping build because pnpm/node is missing.${NC}"
 fi
@@ -97,5 +93,5 @@ echo -e "${GREEN}  NEXUSQUANT LOCAL BOOTSTRAP SUITE COMPLETED SUCCESSFULLY!     
 echo -e "${GREEN}==================================================================${NC}"
 echo -e "Your native platform desktop installer/executable has been successfully built!"
 echo -e "You can find your desktop app installer inside:"
-echo -e "  -> apps/desktop/src-tauri/target/release/bundle/"
+echo -e "  -> apps/desktop/frontend/dist-electron/"
 echo -e "=================================================================="

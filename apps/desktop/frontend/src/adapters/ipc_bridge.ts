@@ -1,15 +1,11 @@
-// Interprocess communication bridge supporting Tauri Rust commands or browser simulations
+// Interprocess communication bridge supporting Electron IPC channels or browser simulations
 export async function invokeRustCommand<T>(method: string, args: Record<string, any> = {}): Promise<T> {
   const windowObj = window as any;
-  if (windowObj.__TAURI_IPC__ || windowObj.__TAURI__) {
+  if (windowObj.electronAPI && windowObj.electronAPI.invoke) {
     try {
-      // Dynamic require/evaluation fallback to avoid static TypeScript compile check
-      const tauri = windowObj.__TAURI__;
-      if (tauri && tauri.invoke) {
-        return await tauri.invoke(method, args);
-      }
+      return await windowObj.electronAPI.invoke(method, args);
     } catch (e) {
-      console.warn("Tauri invoke failed, falling back to simulation.", e);
+      console.warn("Electron invoke failed, falling back to simulation.", e);
     }
   }
 

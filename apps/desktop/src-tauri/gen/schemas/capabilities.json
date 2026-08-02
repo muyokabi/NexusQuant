@@ -1,1 +1,0 @@
-{"default-capabilities":{"identifier":"default-capabilities","description":"Standard permissions for the NexusQuant desktop app.","local":true,"windows":["*"],"permissions":["core:path:default","core:event:default","core:window:default"]}}

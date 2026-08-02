@@ -22,6 +22,7 @@ Write-Host "`n[1/4] Running system capabilities checks..." -ForegroundColor Blue
 $HasNode = Check-Command "node" "Node.js Runtime"
 $HasPnpm = Check-Command "pnpm" "PNPM Package Manager"
 $HasPython = Check-Command "python" "Python Environment"
+$HasCargo = Check-Command "cargo" "Rust Cargo Compiler"
 
 if (-not $HasPython) {
     $HasPython = Check-Command "python3" "Python Environment"
@@ -66,11 +67,18 @@ if ($HasPython) {
     Write-Host "Skipping isolated virtual env setups as python was not found." -ForegroundColor Yellow
 }
 
-# Compile web assets only (Tauri binary compiles skipped as they require platform desktop SDKs)
-Write-Host "`n[4/4] Compiling web and TypeScript workspace targets..." -ForegroundColor Blue
+# Compile web assets only (Tauri binary compiles skipped if cargo is missing)
+Write-Host "`n[4/4] Compiling native desktop executables and bundles..." -ForegroundColor Blue
 if ($HasPnpm) {
-    Write-Host "Running pnpm build to compile only Web assets..." -ForegroundColor Green
+    Write-Host "Running pnpm build to compile Web assets..." -ForegroundColor Green
     pnpm build
+
+    if ($HasCargo) {
+        Write-Host "Compiling native Windows desktop executable (.exe installer) using Tauri..." -ForegroundColor Green
+        pnpm --filter @nexusquant/desktop-frontend tauri build
+    } else {
+        Write-Host "Skipping native Tauri compiler check because Rust Cargo was not detected." -ForegroundColor Yellow
+    }
 } else {
     Write-Host "Skipping monorepo bundle compiles as pnpm was not found." -ForegroundColor Yellow
 }
@@ -78,7 +86,7 @@ if ($HasPnpm) {
 Write-Host "`n==================================================================" -ForegroundColor Green
 Write-Host "  NEXUSQUANT LOCAL WINDOWS BOOTSTRAP COMPLETED SUCCESSFULLY! " -ForegroundColor Green
 Write-Host "==================================================================" -ForegroundColor Green
-Write-Host "You can now execute tasks using the integrated Makefile or run:"
-Write-Host "  - 'pnpm --filter @nexusquant/desktop-frontend run dev' : Launches web charting dashboard"
-Write-Host "  - 'python services/ingestion-engine/src/main.py'       : Runs Python ingestion server"
+Write-Host "Your native Windows installer/executable has been successfully built!"
+Write-Host "You can find your desktop app installer in:"
+Write-Host "  -> apps\desktop\src-tauri\target\release\bundle\"
 Write-Host "==================================================================" -ForegroundColor Green

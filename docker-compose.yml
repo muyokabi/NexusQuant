@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  database:
+    image: timescale/timescaledb:latest-pg15
+    container_name: nexusquant_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: nexusquant
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: my-secure-password
+    volumes:
+      - nq_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nexusquant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ingestion:
+    build:
+      context: ./services/ingestion-engine
+      dockerfile: Dockerfile
+    container_name: nexusquant_ingestion
+    restart: always
+    environment:
+      - DB_TYPE=timescaledb
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_NAME=nexusquant
+      - DB_USER=postgres
+      - DB_PASSWORD=my-secure-password
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "9090:9090"
+
+volumes:
+  nq_postgres_data:

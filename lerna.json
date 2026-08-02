@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "useWorkspaces": true,
+  "version": "1.0.0",
+  "npmClient": "pnpm",
+  "command": {
+    "publish": {
+      "ignoreChanges": ["ignored-file", "**/__tests__/**"],
+      "message": "chore(release): publish %s",
+      "registry": "https://registry.npmjs.org"
+    },
+    "bootstrap": {
+      "npmClientArgs": ["--no-package-lock"]
+    }
+  }
+}

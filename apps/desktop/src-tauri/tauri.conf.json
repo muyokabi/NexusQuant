@@ -1,6 +1,6 @@
 {
   "productName": "NexusQuant",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "identifier": "io.nexusquant.desktop",
   "bundle": {
     "active": true,

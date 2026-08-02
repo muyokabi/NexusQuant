@@ -60,7 +60,7 @@ jobs:
           
           Invoke-WebRequest -Uri $FLATC_URL -OutFile "$env:TEMP\$FLATC_ZIP"
           Expand-Archive -Path "$env:TEMP\$FLATC_ZIP" -DestinationPath $FLATC_DIR -Force
-          Add-Content -Path $env:GITHUB_PATH -Value "$FLATC_DIR\flatc.exe"
+          Add-Content -Path $env:GITHUB_PATH -Value "$FLATC_DIR"
           # Verify installation
           flatc --version
 

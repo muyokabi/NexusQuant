@@ -3,14 +3,7 @@
 > vite
 
 
-  VITE v5.4.21  ready in 272 ms
+  VITE v5.4.21  ready in 268 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: use --host to expose
-8:00:06 PM [vite] hmr update /src/App.tsx
-8:00:57 PM [vite] hmr update /src/App.tsx
-8:02:06 PM [vite] hmr update /src/App.tsx
-8:04:59 PM [vite] hmr update /src/App.tsx
-/app/apps/desktop/frontend:
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @nexusquant/desktop-frontend@1.0.0 dev: `vite`
-Command failed with signal "SIGTERM"

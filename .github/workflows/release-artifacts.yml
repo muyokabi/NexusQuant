@@ -103,12 +103,9 @@ jobs:
         if: matrix.platform != 'macos-latest'
         working-directory: apps/desktop
         run: |
-          pwd
-          ls -lR
           pnpm install --filter @nexusquant/desktop-frontend --frozen-lockfile
           pnpm exec tauri build
         env:
-          PNPM_DEBUG: 1
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 

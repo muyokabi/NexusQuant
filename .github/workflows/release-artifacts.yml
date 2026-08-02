@@ -41,10 +41,28 @@ jobs:
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'x86_64-apple-darwin,aarch64-apple-darwin' || '' }}
 
+      - name: Install macOS Flatbuffers
+        if: matrix.os == 'macos-latest'
+        run: brew install flatbuffers
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Install Windows Flatbuffers
+        if: matrix.os == 'windows-latest'
+        run: |
+          $FLATC_VERSION = "25.12.19" # Latest stable version of FlatBuffers
+          $FLATC_ZIP = "flatbuffers-windows-x64-$FLATC_VERSION.zip"
+          $FLATC_URL = "https://github.com/google/flatbuffers/releases/download/v$FLATC_VERSION/$FLATC_ZIP"
+          $FLATC_DIR = "$env:TEMP\flatbuffers"
+          
+          Invoke-WebRequest -Uri $FLATC_URL -OutFile "$env:TEMP\$FLATC_ZIP"
+          Expand-Archive -Path "$env:TEMP\$FLATC_ZIP" -DestinationPath $FLATC_DIR -Force
+          Add-Content -Path $env:GITHUB_PATH -Value "$FLATC_DIR\flatbuffers-windows-x64\flatc"
+          # Verify installation
+          flatc --version
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3
@@ -64,6 +82,7 @@ jobs:
             libwebkit2gtk-4.1-dev \
             libglib2.0-dev \
             libsoup-3.0-dev \
+            flatbuffers-compiler \
             libjavascriptcoregtk-4.1-dev \
             libssl-dev \
             librsvg2-dev \

@@ -1,5 +1,4 @@
 use std::process::Command;
-use std::path::Path;
 
 fn main() {
     println!("cargo:rerun-if-changed=fbs/market_data.fbs");
